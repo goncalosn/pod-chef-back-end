@@ -21,3 +21,12 @@ func GetHandlers(e *echo.Echo, clientset *kubernetes.Clientset) {
 	e.GET("/pods", h.GetPods)
 	// e.GET("/foods", GetServices)
 }
+
+func PostHandlers(e *echo.Echo, clientset *kubernetes.Clientset) {
+
+	dh := DeploymentHandler{Client: clientset}
+
+	e.GET("/deploy/list", dh.ListDeployments)
+	e.POST("/deploy/create", dh.CreateDeployment)
+	e.POST("/deploy/delete/:depname", dh.DeleteDeployment)
+}
