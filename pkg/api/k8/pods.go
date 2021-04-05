@@ -1,30 +1,36 @@
 package k8
 
 import (
-	"context"
 	"net/http"
 
+	. "pod-chef-back-end/internal/services/k8"
+
 	"github.com/labstack/echo/v4"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-type PodsHandler struct {
-	Client *kubernetes.Clientset
+type K8Handler struct {
+	Clientset *kubernetes.Clientset
 }
 
-//GetPodsByNamespace - GET - returns all the pods from the namespace
-func (h *PodsHandler) GetPods(c echo.Context) error {
-	c.Logger().Info("get pods request")
+//GetPodsByNodeAndNamespace - GET - returns all the pods from the namespace
+func (h *K8Handler) GetPodsByNodeAndNamespace(c echo.Context) error {
+	c.Logger().Info("GetPodsByNodeAndNamespace request")
 
-	//namespace := c.Param("namespace")
+	namespace := c.FormValue("namespace")
+	node := c.FormValue("node")
 
-	pods, err := h.Client.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
+	if namespace == "" || node == "" {
+		return c.JSON(http.StatusBadRequest, "invalid form")
+	}
+
+	serviceHandler := &K8HandlerSrv{Clientset: h.Clientset}
+
+	response, err := serviceHandler.GetPodsByNodeAndNamespaceService(node, namespace)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
-	// 		fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
 
-	return c.JSONPretty(http.StatusOK, pods, " ")
+	return c.JSONPretty(http.StatusOK, response, " ")
 }
