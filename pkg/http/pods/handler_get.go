@@ -1,21 +1,20 @@
-package k8
+package pods
 
 import (
 	"net/http"
-
-	. "pod-chef-back-end/internal/services/k8"
+	. "pod-chef-back-end/pkg/domain/pods"
 
 	"github.com/labstack/echo/v4"
-	"k8s.io/client-go/kubernetes"
+	"github.com/labstack/gommon/log"
 )
 
-type K8Handler struct {
-	Clientset *kubernetes.Clientset
+type PodHandler struct {
+	PodInteractor PodInteractor
 }
 
 //GetPodsByNodeAndNamespace - GET - returns all the pods from the namespace
-func (h *K8Handler) GetPodsByNodeAndNamespace(c echo.Context) error {
-	c.Logger().Info("GetPodsByNodeAndNamespace request")
+func (h *PodHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
+	log.Info("GetPodsByNodeAndNamespace request")
 
 	namespace := c.FormValue("namespace")
 	node := c.FormValue("node")
@@ -24,9 +23,7 @@ func (h *K8Handler) GetPodsByNodeAndNamespace(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "invalid form")
 	}
 
-	serviceHandler := &K8HandlerSrv{Clientset: h.Clientset}
-
-	response, err := serviceHandler.GetPodsByNodeAndNamespaceService(node, namespace)
+	response, err := h.PodInteractor.GetPodsByNodeAndNamespaceInteractor(node, namespace)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, nil)

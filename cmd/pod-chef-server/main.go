@@ -1,15 +1,17 @@
 package main
 
 import (
-	k8 "pod-chef-back-end/internal/services/k8"
-	. "pod-chef-back-end/pkg/handlers"
+	http "pod-chef-back-end/pkg/http"
+
+	kube "pod-chef-back-end/pkg/kubernetes"
+
+	. "pod-chef-back-end/pkg/builders"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	clientset := k8.Connect()
 
 	e := echo.New()
 
@@ -19,10 +21,15 @@ func main() {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:1323/"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	GetHandlers(e, clientset)
+	kubernetesClient := kube.Client()
+
+	services := BuildServices(kubernetesClient)
+	interactors := BuildInteractors(services)
+	http.BuildHandlers(e, interactors)
+
 	e.Logger.Fatal(e.Start(":1323"))
 
 }

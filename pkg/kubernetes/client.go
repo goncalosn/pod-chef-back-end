@@ -1,4 +1,4 @@
-package k8
+package kubernetes
 
 import (
 	"flag"
@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-func Connect() *kubernetes.Clientset {
+func Client() *kubernetes.Clientset {
 	var kubeconfig *string
 
 	log.Info("creating flag for kubeconfig")
