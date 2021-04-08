@@ -8,6 +8,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -16,8 +17,8 @@ type DeploymentHandler struct {
 	//TODO: add here deploymentsClient, needs to be initialized at first
 }
 
-func (h *DeploymentHandler) CreateDeployment(c echo.Context) error {
-	c.Logger().Info("post deployment")
+func (h *DeploymentHandler) CreateDefaultDeployment(c echo.Context) error {
+	c.Logger().Info("post default deployment")
 
 	deploymentsClient := h.Client.AppsV1().Deployments(apiv1.NamespaceDefault)
 
@@ -66,6 +67,38 @@ func (h *DeploymentHandler) CreateDeployment(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, result, " ")
 }
 
+func (h *DeploymentHandler) CreateFileDeployment(c echo.Context) error {
+	c.Logger().Info("post file deployment")
+
+	deploymentsClient := h.Client.AppsV1().Deployments(apiv1.NamespaceDefault)
+
+	// Source
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "error receiving file, not in form?")
+	}
+	src, err := file.Open()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "error getting file handle file")
+	}
+	defer src.Close()
+
+	yamlToJSON := yaml.NewYAMLToJSONDecoder(src)
+
+	// future json object parsed from yaml file
+	var dep *appsv1.Deployment
+	if err := yamlToJSON.Decode(&dep); err != nil {
+		return c.String(http.StatusInternalServerError, "error decoding yaml to json")
+	}
+
+	result, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "error creating deployment")
+	}
+
+	return c.JSONPretty(http.StatusOK, result, "  ")
+}
+
 func (h *DeploymentHandler) ListDeployments(c echo.Context) error {
 	deps, err := h.Client.AppsV1().Deployments(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -79,9 +112,9 @@ func (h *DeploymentHandler) DeleteDeployment(c echo.Context) error {
 	deploymentsClient := h.Client.AppsV1().Deployments(apiv1.NamespaceDefault)
 
 	//! Maybe some problem here?
-	depName := c.Param("depname")
+	depname := c.Param("depname")
 
-	if err := deploymentsClient.Delete(context.TODO(), depName, metav1.DeleteOptions{
+	if err := deploymentsClient.Delete(context.TODO(), depname, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}); err != nil {
 		return c.String(http.StatusInternalServerError, "error deleting deployment")

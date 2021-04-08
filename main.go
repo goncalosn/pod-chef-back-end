@@ -24,6 +24,7 @@ func main() {
 
 	GetHandlers(e, clientset)
 	PostHandlers(e, clientset)
+	DeleteHandlers(e, clientset)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
