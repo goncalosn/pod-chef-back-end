@@ -18,8 +18,8 @@ func (h *PodInteractor) GetPodsByNodeAndNamespaceInteractor(node string, namespa
 	result, err := h.PodService.GetPodsByNodeAndNamespaceService(node, namespace)
 	var newResult []Pod
 
-	for _, kubePod := range result {
-		newPod := Pod{Name: kubePod.Name, State: kubePod.State, RestartCount: kubePod.RestartCount}
+	for _, k8Pod := range result {
+		newPod := Pod{Name: k8Pod.Name, State: k8Pod.State, RestartCount: k8Pod.RestartCount}
 		newResult = append(newResult, newPod)
 	}
 

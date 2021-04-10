@@ -2,8 +2,9 @@ package nodes
 
 import (
 	"context"
+	"fmt"
 
-	. "pod-chef-back-end/pkg/kubernetes"
+	k8 "pod-chef-back-end/pkg/kubernetes"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -18,23 +19,23 @@ func NewNodeService(kubernetesClient *kubernetes.Clientset) *NodeService {
 	return &NodeService{KubernetesClient: kubernetesClient}
 }
 
-func (serviceHandler *NodeService) GetNodeStatsService(node string, namespace string) ([]Pod, error) {
+func (serviceHandler *NodeService) GetNodeStatsService(name string) (k8.Node, error) {
 
-	pods, err := serviceHandler.KubernetesClient.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
+	node, err := serviceHandler.KubernetesClient.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
+
+	fmt.Println(node)
 
 	if err != nil {
-		return nil, err
+		return k8.Node{}, err
 	}
 
-	var response []Pod
+	var response k8.Node
 
-	for _, element := range pods.Items {
-		if node == element.Spec.NodeName {
-			response = append(response, Pod{
-				State:        element.Status.Phase,
-				RestartCount: element.Status.ContainerStatuses[len(element.Status.ContainerStatuses)-1].RestartCount,
-				Name:         element.GetObjectMeta().GetName()})
-		}
+	response = k8.Node{
+		MemoryPressure: node.Status.Conditions[0].Type,
+		DiskPressure:   node.Status.Conditions[1].Type,
+		PIDPressure:    node.Status.Conditions[2].Type,
+		Ready:          node.Status.Conditions[3].Type,
 	}
 
 	return response, err

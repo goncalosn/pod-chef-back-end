@@ -1,7 +1,6 @@
 package nodes
 
 import (
-	. "pod-chef-back-end/pkg/domain/pods"
 	. "pod-chef-back-end/pkg/kubernetes/nodes"
 )
 
@@ -15,14 +14,10 @@ func NewNodeInteractor(NodeService *NodeService) *NodeInteractor {
 	}
 }
 
-func (h *NodeInteractor) GetNodeStatsServiceInteractor(node string, namespace string) ([]Pod, error) {
-	result, err := h.NodeService.GetNodeStatsService(node, namespace)
-	var newResult []Pod
+func (h *NodeInteractor) GetNodeStatsServiceInteractor(name string) (Node, error) {
+	node, err := h.NodeService.GetNodeStatsService(name)
 
-	for _, kubePod := range result {
-		newPod := Pod{Name: kubePod.Name, State: kubePod.State, RestartCount: kubePod.RestartCount}
-		newResult = append(newResult, newPod)
-	}
+	result := Node{MemoryPressure: node.MemoryPressure, DiskPressure: node.DiskPressure, PIDPressure: node.PIDPressure, Ready: node.Ready}
 
-	return newResult, err
+	return result, err
 }
