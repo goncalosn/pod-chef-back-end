@@ -14,10 +14,14 @@ func NewNodeInteractor(NodeService *NodeService) *NodeInteractor {
 	}
 }
 
-func (h *NodeInteractor) GetNodeStatsServiceInteractor(name string) (Node, error) {
-	node, err := h.NodeService.GetNodeStatsService(name)
+func (h *NodeInteractor) GetNodeInteractor(name string) (interface{}, error) {
+	node, err := h.NodeService.GetNodeService(name)
 
-	result := Node{MemoryPressure: node.MemoryPressure, DiskPressure: node.DiskPressure, PIDPressure: node.PIDPressure, Ready: node.Ready}
+	return node, err
+}
 
-	return result, err
+func (h *NodeInteractor) GetNodesInteractor() (interface{}, error) {
+	nodes, err := h.NodeService.GetNodesService()
+
+	return nodes, err
 }

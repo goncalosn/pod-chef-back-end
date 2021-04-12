@@ -3,6 +3,7 @@ package pods
 import (
 	"net/http"
 	. "pod-chef-back-end/pkg/domain/pods"
+	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -26,7 +27,8 @@ func (h *PodHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
 	response, err := h.PodInteractor.GetPodsByNodeAndNamespaceInteractor(node, namespace)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		kubernetesError := err.(httpError.KubernetesError)
+		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")

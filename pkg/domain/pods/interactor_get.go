@@ -14,14 +14,8 @@ func NewPodInteractor(PodService *PodService) *PodInteractor {
 	}
 }
 
-func (h *PodInteractor) GetPodsByNodeAndNamespaceInteractor(node string, namespace string) ([]Pod, error) {
-	result, err := h.PodService.GetPodsByNodeAndNamespaceService(node, namespace)
-	var newResult []Pod
+func (h *PodInteractor) GetPodsByNodeAndNamespaceInteractor(node string, namespace string) (interface{}, error) {
+	pods, err := h.PodService.GetPodsByNodeAndNamespaceService(node, namespace)
 
-	for _, k8Pod := range result {
-		newPod := Pod{Name: k8Pod.Name, State: k8Pod.State, RestartCount: k8Pod.RestartCount}
-		newResult = append(newResult, newPod)
-	}
-
-	return newResult, err
+	return pods, err
 }

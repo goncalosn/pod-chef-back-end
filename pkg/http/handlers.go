@@ -20,5 +20,6 @@ func BuildHandlers(e *echo.Echo, interactors *builders.InteractorsContainer) {
 	nodeHandler := nodes.NodeHandler{NodeInteractor: *interactors.NodeInteractor}
 
 	e.GET("/pods", podHandler.GetPodsByNodeAndNamespace)
-	e.GET("/node-stats", nodeHandler.GetNodeStatsService)
+	e.GET("/nodes", nodeHandler.GetNodes)
+	e.GET("/node", nodeHandler.GetNode)
 }

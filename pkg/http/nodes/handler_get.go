@@ -3,29 +3,38 @@ package nodes
 import (
 	"net/http"
 	. "pod-chef-back-end/pkg/domain/nodes"
+	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 type NodeHandler struct {
 	NodeInteractor NodeInteractor
 }
 
-//GetNodeStatsService - GET - returns all the pods from the namespace
-func (h *NodeHandler) GetNodeStatsService(c echo.Context) error {
-	log.Info("GetNodeStatsService request")
-
+func (h *NodeHandler) GetNode(c echo.Context) error {
 	node := c.FormValue("node")
 
 	if node == "" {
-		return c.JSON(http.StatusBadRequest, "invalid form")
+		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
-	response, err := h.NodeInteractor.GetNodeStatsServiceInteractor(node)
+	response, err := h.NodeInteractor.GetNodeInteractor(node)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		kubernetesError := err.(httpError.KubernetesError)
+		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+func (h *NodeHandler) GetNodes(c echo.Context) error {
+	response, err := h.NodeInteractor.GetNodesInteractor()
+
+	if err != nil {
+		kubernetesError := err.(httpError.KubernetesError)
+		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")
