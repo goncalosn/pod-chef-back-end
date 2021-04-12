@@ -1,14 +1,15 @@
 package main
 
 import (
-	http "pod-chef-back-end/pkg/http"
-
-	kube "pod-chef-back-end/pkg/kubernetes"
-
-	. "pod-chef-back-end/pkg/builders"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	handlers "pod-chef-back-end/handlers"
+	nodes "pod-chef-back-end/internal/core/services/nodes"
+	pods "pod-chef-back-end/internal/core/services/pods"
+	repositories "pod-chef-back-end/repositories/kubernetes"
 )
 
 func main() {
@@ -24,11 +25,15 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	kubernetesClient := kube.Client()
+	kubernetesRepository := repositories.KubernetesRepository()
+	nodeServices := nodes.NewGetService(kubernetesRepository.Nodes)
+	podServices := pods.NewGetService(kubernetesRepository.Pods)
+	handlers.NodeHandler(e, nodeServices)
+	handlers.PodHandler(e, podServices)
 
-	services := BuildServices(kubernetesClient)
-	interactors := BuildInteractors(services)
-	http.BuildHandlers(e, interactors)
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
 
 	e.Logger.Fatal(e.Start(":1323"))
 

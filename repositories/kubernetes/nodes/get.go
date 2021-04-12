@@ -14,17 +14,19 @@ import (
 )
 
 //this service's dependencies
-type NodeService struct {
-	KubernetesClient *kubernetes.Clientset
+type KubernetesClient struct {
+	Clientset *kubernetes.Clientset
 }
 
 //service in charge of dealing with GET requests and nodes
-func NewNodeService(kubernetesClient *kubernetes.Clientset) *NodeService {
-	return &NodeService{KubernetesClient: kubernetesClient}
+func New(clientset *kubernetes.Clientset) *KubernetesClient {
+	return &KubernetesClient{
+		Clientset: clientset,
+	}
 }
 
 //Get node data by name
-func (serviceHandler *NodeService) GetNodeService(name string) (interface{}, error) {
+func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error) {
 	//struct with the needed values from the node
 	type Node struct {
 		MemoryPressure v1.ConditionStatus
@@ -34,7 +36,7 @@ func (serviceHandler *NodeService) GetNodeService(name string) (interface{}, err
 	}
 
 	//list the node from the pool with the given name
-	node, err := serviceHandler.KubernetesClient.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
+	node, err := serviceHandler.Clientset.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 
 	//verify if there is an error and then what kind of error it is
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
@@ -59,7 +61,7 @@ func (serviceHandler *NodeService) GetNodeService(name string) (interface{}, err
 }
 
 //Get all nodes in cluster
-func (serviceHandler *NodeService) GetNodesService() (interface{}, error) {
+func (serviceHandler *KubernetesClient) GetNodes() (interface{}, error) {
 	//struct with the needed values from the nodes
 	type Node struct {
 		Name      string
@@ -68,7 +70,7 @@ func (serviceHandler *NodeService) GetNodesService() (interface{}, error) {
 	}
 
 	//list all nodes from the cluster
-	nodes, err := serviceHandler.KubernetesClient.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	nodes, err := serviceHandler.Clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 
 	//verify if there is an error and then what kind of error it is
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {

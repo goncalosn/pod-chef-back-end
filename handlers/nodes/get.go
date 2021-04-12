@@ -2,24 +2,30 @@ package nodes
 
 import (
 	"net/http"
-	. "pod-chef-back-end/pkg/domain/nodes"
+	ports "pod-chef-back-end/internal/core/ports"
 	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/echo/v4"
 )
 
-type NodeHandler struct {
-	NodeInteractor NodeInteractor
+type HTTPHandler struct {
+	NodeServices ports.NodeServices
 }
 
-func (h *NodeHandler) GetNode(c echo.Context) error {
+func NewHTTPHandler(nodeService ports.NodeServices) *HTTPHandler {
+	return &HTTPHandler{
+		NodeServices: nodeService,
+	}
+}
+
+func (h *HTTPHandler) GetNode(c echo.Context) error {
 	node := c.FormValue("node")
 
 	if node == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
-	response, err := h.NodeInteractor.GetNodeInteractor(node)
+	response, err := h.NodeServices.GetNode(node)
 
 	if err != nil {
 		kubernetesError := err.(httpError.KubernetesError)
@@ -29,8 +35,8 @@ func (h *NodeHandler) GetNode(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-func (h *NodeHandler) GetNodes(c echo.Context) error {
-	response, err := h.NodeInteractor.GetNodesInteractor()
+func (h *HTTPHandler) GetNodes(c echo.Context) error {
+	response, err := h.NodeServices.GetNodes()
 
 	if err != nil {
 		kubernetesError := err.(httpError.KubernetesError)

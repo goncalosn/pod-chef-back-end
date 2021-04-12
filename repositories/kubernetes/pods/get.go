@@ -13,26 +13,29 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type PodService struct {
-	k8rnetesClient *kubernetes.Clientset
+//this service's dependencies
+type KubernetesClient struct {
+	Clientset *kubernetes.Clientset
 }
 
-func NewPodService(k8rnetesClient *kubernetes.Clientset) *PodService {
-
-	return &PodService{k8rnetesClient: k8rnetesClient}
+//service in charge of dealing with GET requests and nodes
+func New(clientset *kubernetes.Clientset) *KubernetesClient {
+	return &KubernetesClient{
+		Clientset: clientset,
+	}
 }
 
 //Get all pods in node and namespace
-func (serviceHandler *PodService) GetPodsByNodeAndNamespaceService(node string, namespace string) (interface{}, error) {
+func (serviceHandler *KubernetesClient) GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error) {
 	//struct with the needed values from the pods
-	type Pod struct {
+	type KubernetesClient struct {
 		State        v1.PodPhase
 		RestartCount int32
 		Name         string
 	}
 
 	//list all pods
-	pods, err := serviceHandler.k8rnetesClient.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
+	pods, err := serviceHandler.Clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
 
 	//verify if there is an error and then what kind of error it is
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
@@ -45,20 +48,20 @@ func (serviceHandler *PodService) GetPodsByNodeAndNamespaceService(node string, 
 		return nil, httpError.NewHTTPError(err, http.StatusInternalServerError, "Internal error")
 	}
 
-	var response []*Pod
+	var response []*KubernetesClient
 
 	//filter each field from the kubernetes pod struct
 	for _, element := range pods.Items {
 		//verify if this pod belongs in node with name(parameter)
 		if node == element.Spec.NodeName {
 			//adds new node to the response
-			response = append(response, &Pod{
+			response = append(response, &KubernetesClient{
 				State:        element.Status.Phase,
 				RestartCount: element.Status.ContainerStatuses[len(element.Status.ContainerStatuses)-1].RestartCount,
 				Name:         element.GetObjectMeta().GetName()})
 		}
 	}
 
-	return response, httpError.NewHTTPError(nil, http.StatusFound, "Pods found")
+	return response, httpError.NewHTTPError(nil, http.StatusFound, "KubernetesClients found")
 
 }

@@ -2,21 +2,23 @@ package pods
 
 import (
 	"net/http"
-	. "pod-chef-back-end/pkg/domain/pods"
+	ports "pod-chef-back-end/internal/core/ports"
 	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
-type PodHandler struct {
-	PodInteractor PodInteractor
+type HTTPHandler struct {
+	PodServices ports.PodServices
 }
 
-//GetPodsByNodeAndNamespace - GET - returns all the pods from the namespace
-func (h *PodHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
-	log.Info("GetPodsByNodeAndNamespace request")
+func NewHTTPHandler(podService ports.PodServices) *HTTPHandler {
+	return &HTTPHandler{
+		PodServices: podService,
+	}
+}
 
+func (h *HTTPHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
 	namespace := c.FormValue("namespace")
 	node := c.FormValue("node")
 
@@ -24,7 +26,7 @@ func (h *PodHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "invalid form")
 	}
 
-	response, err := h.PodInteractor.GetPodsByNodeAndNamespaceInteractor(node, namespace)
+	response, err := h.PodServices.GetPodsByNodeAndNamespace(node, namespace)
 
 	if err != nil {
 		kubernetesError := err.(httpError.KubernetesError)
