@@ -7,8 +7,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	handlers "pod-chef-back-end/handlers"
-	nodes "pod-chef-back-end/internal/core/services/nodes"
-	pods "pod-chef-back-end/internal/core/services/pods"
+	services "pod-chef-back-end/internal/core/services"
 	repositories "pod-chef-back-end/repositories/kubernetes"
 )
 
@@ -26,8 +25,8 @@ func main() {
 	}))
 
 	kubernetesRepository := repositories.KubernetesRepository()
-	nodeServices := nodes.NewGetService(kubernetesRepository.Nodes)
-	podServices := pods.NewGetService(kubernetesRepository.Pods)
+	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
+	podServices := services.PodServices(kubernetesRepository.Pods)
 	handlers.NodeHandler(e, nodeServices)
 	handlers.PodHandler(e, podServices)
 

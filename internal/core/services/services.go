@@ -6,10 +6,10 @@ import (
 	pods "pod-chef-back-end/internal/core/services/pods"
 )
 
-func NewNodeServices(kubernetesRepository ports.Node) {
-	nodes.NewGetService(kubernetesRepository)
+func NodeServices(kubernetesRepository ports.Node) *nodes.Service {
+	return nodes.NewGetService(kubernetesRepository)
 }
 
-func NewPodServices(kubernetesRepository ports.Pod) {
-	pods.NewGetService(kubernetesRepository)
+func PodServices(kubernetesRepository ports.Pod) *pods.Service {
+	return pods.NewGetService(kubernetesRepository)
 }

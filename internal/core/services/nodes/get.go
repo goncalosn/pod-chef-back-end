@@ -5,17 +5,17 @@ import (
 	ports "pod-chef-back-end/internal/core/ports"
 )
 
-type service struct {
+type Service struct {
 	kubernetesRepository ports.Node
 }
 
-func NewGetService(kubernetesRepository ports.Node) *service {
-	return &service{
+func NewGetService(kubernetesRepository ports.Node) *Service {
+	return &Service{
 		kubernetesRepository: kubernetesRepository,
 	}
 }
 
-func (srv *service) GetNode(name string) (interface{}, error) {
+func (srv *Service) GetNode(name string) (interface{}, error) {
 	node, err := srv.kubernetesRepository.GetNode(name)
 
 	if err != nil {
@@ -25,7 +25,7 @@ func (srv *service) GetNode(name string) (interface{}, error) {
 	return node, nil
 }
 
-func (srv *service) GetNodes() (interface{}, error) {
+func (srv *Service) GetNodes() (interface{}, error) {
 	nodes, err := srv.kubernetesRepository.GetNodes()
 
 	if err != nil {
