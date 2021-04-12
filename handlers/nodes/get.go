@@ -28,8 +28,8 @@ func (h *HTTPHandler) GetNode(c echo.Context) error {
 	response, err := h.NodeServices.GetNode(node)
 
 	if err != nil {
-		kubernetesError := err.(httpError.KubernetesError)
-		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
+		kubernetesError := err.(*httpError.Error)
+		return c.JSON(kubernetesError.Code, kubernetesError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")
@@ -39,8 +39,8 @@ func (h *HTTPHandler) GetNodes(c echo.Context) error {
 	response, err := h.NodeServices.GetNodes()
 
 	if err != nil {
-		kubernetesError := err.(httpError.KubernetesError)
-		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
+		kubernetesError := err.(*httpError.Error)
+		return c.JSON(kubernetesError.Code, kubernetesError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")

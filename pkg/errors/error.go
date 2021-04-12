@@ -1,50 +1,45 @@
 package errors
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "net/http"
 
-type HTTPError struct {
-	Cause   error  `json:"-"`
+// Error defines a standard application error.
+type Error struct {
+	// Machine-readable error code.
+	Code int `json:"-"`
+
+	// Human-readable message.
 	Message string `json:"Message"`
-	Status  int    `json:"-"`
+
+	// Logical operation and nested error.
+	Op  string `json:"-"`
+	Err error  `json:"-"`
 }
 
-func (e *HTTPError) Error() string {
-	return e.Cause.Error()
+func (err *Error) Error() string {
+	return err.Err.Error()
 }
 
-func NewHTTPError(err error, status int, message string) error {
-	return &HTTPError{
-		Cause:   err,
-		Message: message,
-		Status:  status,
+// ErrorCode returns the code of the root error, if available. Otherwise returns EINTERNAL.
+func ErrorCode(err error) int {
+	if err == nil {
+		return http.StatusOK
+	} else if e, ok := err.(*Error); ok && e.Code != http.StatusOK {
+		return e.Code
+	} else if ok && e.Err != nil {
+		return ErrorCode(e.Err)
 	}
+	return http.StatusInternalServerError
 }
 
-// ResponseBody returns JSON response body.
-func (e *HTTPError) ResponseBody() ([]byte, error) {
-	body, err := json.Marshal(e)
-	if err != nil {
-		return nil, fmt.Errorf("Error while parsing response body: %v", err)
+// ErrorMessage returns the human-readable message of the error, if available.
+// Otherwise returns a generic error message.
+func ErrorMessage(err error) string {
+	if err == nil {
+		return ""
+	} else if e, ok := err.(*Error); ok && e.Message != "" {
+		return e.Message
+	} else if ok && e.Err != nil {
+		return ErrorMessage(e.Err)
 	}
-	return body, nil
-}
-
-// ResponseHeaders returns http status code and headers.
-func (e *HTTPError) ResponseHeaders() (int, map[string]string) {
-	return e.Status, map[string]string{
-		"Content-Type": "application/json; charset=utf-8",
-	}
-}
-
-// GetStatus returns the error status
-func (e *HTTPError) GetStatus() int {
-	return e.Status
-}
-
-// GetMessage returns the error message
-func (e *HTTPError) GetMessage() string {
-	return e.Message
+	return "An internal error has occurred."
 }

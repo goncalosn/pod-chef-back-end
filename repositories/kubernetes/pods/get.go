@@ -39,13 +39,13 @@ func (serviceHandler *KubernetesClient) GetPodsByNodeAndNamespace(node string, n
 
 	//verify if there is an error and then what kind of error it is
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-		//pods not found
+		//no pods found
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusNotFound, "No pods found")
+		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No pods found"}
 	} else if err != nil {
 		//service error
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusInternalServerError, "Internal error")
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*KubernetesClient
@@ -62,6 +62,6 @@ func (serviceHandler *KubernetesClient) GetPodsByNodeAndNamespace(node string, n
 		}
 	}
 
-	return response, httpError.NewHTTPError(nil, http.StatusFound, "KubernetesClients found")
+	return response, nil
 
 }

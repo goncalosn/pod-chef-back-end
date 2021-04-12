@@ -29,8 +29,8 @@ func (h *HTTPHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
 	response, err := h.PodServices.GetPodsByNodeAndNamespace(node, namespace)
 
 	if err != nil {
-		kubernetesError := err.(httpError.KubernetesError)
-		return c.JSON(kubernetesError.GetStatus(), kubernetesError)
+		kubernetesError := err.(*httpError.Error)
+		return c.JSON(kubernetesError.Code, kubernetesError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")

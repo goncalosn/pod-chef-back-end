@@ -42,11 +42,11 @@ func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//node not found
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusNotFound, "Node not found")
+		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Node not found"}
 	} else if err != nil {
 		//service error
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusInternalServerError, "Internal error")
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	//adds the node to the response
@@ -76,11 +76,11 @@ func (serviceHandler *KubernetesClient) GetNodes() (interface{}, error) {
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//no nodes found
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusNotFound, "No nodes found")
+		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No nodes found"}
 	} else if err != nil {
 		//service error
 		log.Error(err)
-		return nil, httpError.NewHTTPError(err, http.StatusInternalServerError, "Internal error")
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*Node
