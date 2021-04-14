@@ -10,20 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
-
-//this service's dependencies
-type KubernetesClient struct {
-	Clientset *kubernetes.Clientset
-}
-
-//service in charge of dealing with GET requests and nodes
-func New(clientset *kubernetes.Clientset) *KubernetesClient {
-	return &KubernetesClient{
-		Clientset: clientset,
-	}
-}
 
 //Get node data by name
 func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error) {

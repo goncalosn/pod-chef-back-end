@@ -19,7 +19,7 @@ func NewHTTPHandler(nodeService ports.NodeServices) *HTTPHandler {
 }
 
 func (h *HTTPHandler) GetNode(c echo.Context) error {
-	node := c.FormValue("node")
+	node := c.QueryParam("node")
 
 	if node == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")

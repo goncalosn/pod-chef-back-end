@@ -19,11 +19,11 @@ func NewHTTPHandler(podService ports.PodServices) *HTTPHandler {
 }
 
 func (h *HTTPHandler) GetPodsByNodeAndNamespace(c echo.Context) error {
-	namespace := c.FormValue("namespace")
-	node := c.FormValue("node")
+	namespace := c.QueryParam("namespace")
+	node := c.QueryParam("node")
 
 	if namespace == "" || node == "" {
-		return c.JSON(http.StatusBadRequest, "invalid form")
+		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
 	response, err := h.PodServices.GetPodsByNodeAndNamespace(node, namespace)

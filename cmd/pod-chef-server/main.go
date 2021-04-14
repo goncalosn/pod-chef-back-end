@@ -27,8 +27,10 @@ func main() {
 	kubernetesRepository := repositories.KubernetesRepository()
 	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
 	podServices := services.PodServices(kubernetesRepository.Pods)
+	deploymentServices := services.DeploymentServices(kubernetesRepository.Deployments)
 	handlers.NodeHandler(e, nodeServices)
 	handlers.PodHandler(e, podServices)
+	handlers.DeploymentHandler(e, deploymentServices)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
