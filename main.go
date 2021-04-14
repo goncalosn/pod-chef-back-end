@@ -23,6 +23,8 @@ func main() {
 	}))
 
 	GetHandlers(e, clientset)
-	e.Logger.Fatal(e.Start(":1323"))
+	PostHandlers(e, clientset)
+	DeleteHandlers(e, clientset)
 
+	e.Logger.Fatal(e.Start(":1323"))
 }
