@@ -20,9 +20,15 @@ func NewPostService(kubernetesRepository ports.Deployment) *Service {
 
 func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
 
-	//TODO: VERIFICAR SE O NOME DO DEPLOY JÁ EXISTE
-	node, err := srv.kubernetesRepository.CreateDefaultDeployment(name, replicas, image)
+	flag, err := srv.kubernetesRepository.CheckRepeatedDeployName(name)
+	if err != nil {
+		return nil, err
+	}
+	if flag {
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
+	}
 
+	node, err := srv.kubernetesRepository.CreateDefaultDeployment(name, replicas, image)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +53,14 @@ func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{
 	if err := yamlToJSON.Decode(&dep); err != nil {
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	flag, err := srv.kubernetesRepository.CheckRepeatedDeployName(dep.Name)
+	if err != nil {
+		return nil, err
+	}
+	if flag {
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
 	}
 
 	response, err := srv.kubernetesRepository.CreateFileDeployment(dep)

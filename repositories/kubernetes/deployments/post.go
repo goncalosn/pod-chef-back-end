@@ -10,10 +10,30 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
+
+type Deploy struct {
+	Name string
+}
 
 func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+
+	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
+
+	if err != nil {
+		//service error
+		log.Error(err)
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	for _, dep := range deploymentsList.Items {
+		if dep.Name == name {
+			// TODO: Throw new error, "deploy allready exists"
+			return &httpError.Error{Code: http.StatusInternalServerError, Message: "that deploy allready exists, change name?", Err: nil}, nil
+		}
+	}
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -52,14 +72,14 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	}
 
 	// result is the full deployment created
-	_, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return Deploy{res.Name}, nil
 }
 
 func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
@@ -73,4 +93,24 @@ func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deploym
 	}
 
 	return nil, nil
+}
+
+// True means there is a deploy with the same name
+func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, deploy v1.DeploymentInterface) (bool, error) {
+	deploymentsList, err := deploy.List(context.TODO(), metav1.ListOptions{})
+
+	if err != nil {
+		//service error
+		log.Error(err)
+		return true, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
+	}
+
+	for _, dep := range deploymentsList.Items {
+		if dep.Name == name {
+			// TODO: Throw new error, "deploy allready exists"
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
