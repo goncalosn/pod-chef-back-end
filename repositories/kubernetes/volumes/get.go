@@ -13,5 +13,5 @@ func (serviceHandler *KubernetesClient) GetVolumes() (interface{}, error) {
 		return nil, err
 	}
 
-	return response, nil
+	return response.Items, nil
 }

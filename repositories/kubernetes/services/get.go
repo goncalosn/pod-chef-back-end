@@ -13,5 +13,5 @@ func (serviceHandler *KubernetesClient) GetServicesByNamespace(namespace string)
 		return nil, err
 	}
 
-	return response, nil
+	return response.Items, nil
 }

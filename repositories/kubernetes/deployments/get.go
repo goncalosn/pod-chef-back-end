@@ -18,5 +18,5 @@ func (serviceHandler *KubernetesClient) GetDeployments() (interface{}, error) {
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
-	return response, nil
+	return response.Items, nil
 }
