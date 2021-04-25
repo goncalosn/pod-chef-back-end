@@ -19,21 +19,6 @@ type Deploy struct {
 func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
-	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
-
-	if err != nil {
-		//service error
-		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	}
-
-	for _, dep := range deploymentsList.Items {
-		if dep.Name == name {
-			// TODO: Throw new error, "deploy allready exists"
-			return &httpError.Error{Code: http.StatusInternalServerError, Message: "that deploy allready exists, change name?", Err: nil}, nil
-		}
-	}
-
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -71,35 +56,33 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	}
 
 	// result is the full deployment created
-	_, err = deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return Deploy{res.Name}, nil
 }
 
 func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
-	_, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
+	res, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return Deploy{res.Name}, nil
 }
 
 // True means there is a deploy with the same name
 func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, namespace string) (bool, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(namespace)
 	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
-
-	// deploymentsList, err := serviceHandler.Clientset.AppsV1().Deployments().List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil {
 		//service error
@@ -109,7 +92,7 @@ func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, nam
 
 	for _, dep := range deploymentsList.Items {
 		if dep.Name == name {
-			// TODO: Throw new error, "deploy allready exists"
+			//returns true if there is allready a deploy with the same name
 			return true, nil
 		}
 	}

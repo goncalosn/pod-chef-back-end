@@ -20,12 +20,12 @@ func NewPostService(k8DeploymentsRepository ports.Deployment, k8NamespacesReposi
 }
 
 func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
-	flag, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(name, "default")
+	nameExists, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(name, "default")
 	if err != nil {
 		return nil, err
 	}
 
-	if flag {
+	if nameExists {
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Deployment name already used."}
 	}
 
@@ -38,7 +38,6 @@ func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image 
 }
 
 func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{}, error) {
-	//TODO: VERIFICAR SE O NOME DO DEPLOY JÁ EXISTE
 
 	src, err := file.Open()
 	if err != nil {
@@ -66,17 +65,18 @@ func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{
 		dep.Namespace = "default"
 	}
 
-	if ok := contains(namespaces, dep.Namespace); ok == false {
+	//verify corret namespace name
+	if ok := contains(namespaces, dep.Namespace); !ok {
 		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Namespace does not exist"}
 	}
 
 	//check if deployment name already exists
-	flag, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(dep.Name, dep.Namespace)
+	nameExists, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(dep.Name, dep.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	if flag {
+	if nameExists {
 		//deployment name exists
 		return nil, &httpError.Error{Err: err, Code: http.StatusConflict, Message: "Deployment name already used."}
 	}

@@ -24,3 +24,12 @@ type Deployment interface {
 type Namespace interface {
 	GetNamespaces() ([]string, error)
 }
+
+// Service stands for kubernetes service
+type Service interface {
+	GetServicesByNamespace(namespace string) (interface{}, error)
+}
+
+type Volume interface {
+	GetVolumes() (interface{}, error)
+}

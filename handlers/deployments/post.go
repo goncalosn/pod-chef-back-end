@@ -10,9 +10,9 @@ import (
 )
 
 func (h *HTTPHandler) CreateDefaultDeployment(c echo.Context) error {
-	name := c.QueryParam("name")
-	replicas := c.QueryParam("replicas")
-	image := c.QueryParam("image")
+	name := c.FormValue("name")
+	replicas := c.FormValue("replicas")
+	image := c.FormValue("image")
 
 	if name == "" || replicas == "" || image == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
