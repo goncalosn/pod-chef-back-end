@@ -12,23 +12,24 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
-func NewPostService(kubernetesRepository ports.Deployment) *Service {
+func NewPostService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
 	return &Service{
-		kubernetesRepository: kubernetesRepository,
+		k8DeploymentsRepository: k8DeploymentsRepository,
+		k8NamespacesRepository:  k8NamespacesRepository,
 	}
 }
 
 func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
-
-	flag, err := srv.kubernetesRepository.CheckRepeatedDeployName(name)
+	flag, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(name, "default")
 	if err != nil {
 		return nil, err
 	}
+
 	if flag {
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Deployment name already used."}
 	}
 
-	node, err := srv.kubernetesRepository.CreateDefaultDeployment(name, replicas, image)
+	node, err := srv.k8DeploymentsRepository.CreateDefaultDeployment(name, replicas, image)
 	if err != nil {
 		return nil, err
 	}
@@ -55,19 +56,45 @@ func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	flag, err := srv.kubernetesRepository.CheckRepeatedDeployName(dep.Name)
+	//check namespace
+	namespaces, err := srv.k8NamespacesRepository.GetNamespaces()
+	if err != nil {
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	if dep.Namespace == "" {
+		dep.Namespace = "default"
+	}
+
+	if ok := contains(namespaces, dep.Namespace); ok == false {
+		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Namespace does not exist"}
+	}
+
+	//check if deployment name already exists
+	flag, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(dep.Name, dep.Namespace)
 	if err != nil {
 		return nil, err
 	}
+
 	if flag {
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
+		//deployment name exists
+		return nil, &httpError.Error{Err: err, Code: http.StatusConflict, Message: "Deployment name already used."}
 	}
 
-	response, err := srv.kubernetesRepository.CreateFileDeployment(dep)
+	response, err := srv.k8DeploymentsRepository.CreateFileDeployment(dep)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return response, nil
+}
+
+func contains(array []string, str string) bool {
+	for _, element := range array {
+		if element == str {
+			return true
+		}
+	}
+	return false
 }

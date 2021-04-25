@@ -10,7 +10,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 type Deploy struct {
@@ -72,14 +71,14 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	}
 
 	// result is the full deployment created
-	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	_, err = deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return Deploy{res.Name}, nil
+	return nil, nil
 }
 
 func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
@@ -96,8 +95,11 @@ func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deploym
 }
 
 // True means there is a deploy with the same name
-func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, deploy v1.DeploymentInterface) (bool, error) {
-	deploymentsList, err := deploy.List(context.TODO(), metav1.ListOptions{})
+func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, namespace string) (bool, error) {
+	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(namespace)
+	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
+
+	// deploymentsList, err := serviceHandler.Clientset.AppsV1().Deployments().List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil {
 		//service error

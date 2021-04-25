@@ -27,10 +27,12 @@ func main() {
 	kubernetesRepository := repositories.KubernetesRepository()
 	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
 	podServices := services.PodServices(kubernetesRepository.Pods)
-	deploymentServices := services.DeploymentServices(kubernetesRepository.Deployments)
+	namespaceServices := services.NamespaceServices(kubernetesRepository.Namespaces)
+	deploymentServices := services.DeploymentServices(kubernetesRepository.Deployments, kubernetesRepository.Namespaces)
 	handlers.NodeHandler(e, nodeServices)
 	handlers.PodHandler(e, podServices)
 	handlers.DeploymentHandler(e, deploymentServices)
+	handlers.NamespaceHandler(e, namespaceServices)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")

@@ -17,6 +17,10 @@ type Deployment interface {
 	CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error)
 	CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error)
 	GetDeployments() (interface{}, error)
-	CheckRepeatedDeployName(name string) (bool, error)
+	CheckRepeatedDeployName(name string, namespace string) (bool, error)
 	DeleteDeployment(name string) (interface{}, error)
+}
+
+type Namespace interface {
+	GetNamespaces() ([]string, error)
 }

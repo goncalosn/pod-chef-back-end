@@ -2,6 +2,7 @@ package http
 
 import (
 	deployments "pod-chef-back-end/handlers/deployments"
+	namespaces "pod-chef-back-end/handlers/namespaces"
 	nodes "pod-chef-back-end/handlers/nodes"
 	pods "pod-chef-back-end/handlers/pods"
 	ports "pod-chef-back-end/internal/core/ports"
@@ -29,4 +30,10 @@ func DeploymentHandler(e *echo.Echo, service ports.DeploymentServices) {
 	e.DELETE("/deployment/:id", deploymentsHandler.DeleteDeployment)
 	e.POST("/deployment/default-create", deploymentsHandler.CreateDefaultDeployment)
 	e.POST("/deployment/advanced-create", deploymentsHandler.CreateFileDeployment)
+}
+
+func NamespaceHandler(e *echo.Echo, service ports.NamespaceServices) {
+	namespacesHandler := namespaces.NewHTTPHandler(service)
+
+	e.GET("/namespaces", namespacesHandler.GetNamespaces)
 }

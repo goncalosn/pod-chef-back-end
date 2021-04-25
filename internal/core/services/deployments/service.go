@@ -3,11 +3,13 @@ package deployments
 import "pod-chef-back-end/internal/core/ports"
 
 type Service struct {
-	kubernetesRepository ports.Deployment
+	k8DeploymentsRepository ports.Deployment
+	k8NamespacesRepository  ports.Namespace
 }
 
-func NewService(kubernetesRepository ports.Deployment) *Service {
+func NewService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
 	return &Service{
-		kubernetesRepository: kubernetesRepository,
+		k8DeploymentsRepository: k8DeploymentsRepository,
+		k8NamespacesRepository:  k8NamespacesRepository,
 	}
 }
