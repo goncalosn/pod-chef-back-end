@@ -4,14 +4,15 @@ import (
 	ports "pod-chef-back-end/internal/core/ports"
 )
 
-func NewDeleteService(kubernetesRepository ports.Deployment) *Service {
+func NewDeleteService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
 	return &Service{
-		kubernetesRepository: kubernetesRepository,
+		k8DeploymentsRepository: k8DeploymentsRepository,
+		k8NamespacesRepository:  k8NamespacesRepository,
 	}
 }
 
 func (srv *Service) DeleteDeployment(name string) (interface{}, error) {
-	response, err := srv.kubernetesRepository.DeleteDeployment(name)
+	response, err := srv.k8DeploymentsRepository.DeleteDeployment(name)
 
 	if err != nil {
 		return nil, err

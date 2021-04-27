@@ -17,3 +17,16 @@ type DeploymentServices interface {
 	GetDeployments() (interface{}, error)
 	DeleteDeployment(name string) (interface{}, error)
 }
+
+type NamespaceServices interface {
+	GetNamespaces() (interface{}, error)
+}
+
+// Service stands for kubernetes service
+type ServiceServices interface {
+	GetServicesByNamespace(namespace string) (interface{}, error)
+}
+
+type VolumeServices interface {
+	GetVolumes() (interface{}, error)
+}

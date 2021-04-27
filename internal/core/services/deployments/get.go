@@ -4,14 +4,15 @@ import (
 	ports "pod-chef-back-end/internal/core/ports"
 )
 
-func NewGetService(kubernetesRepository ports.Deployment) *Service {
+func NewGetService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
 	return &Service{
-		kubernetesRepository: kubernetesRepository,
+		k8DeploymentsRepository: k8DeploymentsRepository,
+		k8NamespacesRepository:  k8NamespacesRepository,
 	}
 }
 
 func (srv *Service) GetDeployments() (interface{}, error) {
-	response, err := srv.kubernetesRepository.GetDeployments()
+	response, err := srv.k8DeploymentsRepository.GetDeployments()
 
 	if err != nil {
 		return nil, err

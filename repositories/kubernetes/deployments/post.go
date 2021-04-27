@@ -12,6 +12,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Deploy struct {
+	Name string
+}
+
 func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
@@ -52,25 +56,46 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	}
 
 	// result is the full deployment created
-	_, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return Deploy{res.Name}, nil
 }
 
 func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
-	_, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
+	res, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
 	if err != nil {
 		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return Deploy{res.Name}, nil
+}
+
+// True means there is a deploy with the same name
+func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, namespace string) (bool, error) {
+	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(namespace)
+	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
+
+	if err != nil {
+		//service error
+		log.Error(err)
+		return true, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
+	}
+
+	for _, dep := range deploymentsList.Items {
+		if dep.Name == name {
+			//returns true if there is allready a deploy with the same name
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
