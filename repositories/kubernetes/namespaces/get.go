@@ -21,11 +21,25 @@ func (serviceHandler *KubernetesClient) GetNamespaces() ([]string, error) {
 
 	//filter each field from the kubernetes namespace struct
 	for _, element := range namespaces.Items {
-		//adds namespace name to the response
-		response = append(response, element.Name)
+		//namespace system list
+		systemNamespaces := []string{"kube-node-lease", "kube-public", "kube-system", "local-path-storage"}
+
+		if !contains(systemNamespaces, element.Name) {
+			//adds namespace name to the response
+			response = append(response, element.Name)
+		}
 
 	}
 
 	return response, nil
 
+}
+
+func contains(array []string, str string) bool {
+	for _, element := range array {
+		if element == str {
+			return true
+		}
+	}
+	return false
 }
