@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -16,10 +17,11 @@ import (
 func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error) {
 	//struct with the needed values from the node
 	type Node struct {
-		MemoryPressure v1.ConditionStatus
-		DiskPressure   v1.ConditionStatus
-		PIDPressure    v1.ConditionStatus
-		Ready          v1.ConditionStatus
+		Name            string
+		MaxPods         *resource.Quantity
+		AllocatablePods *resource.Quantity
+		Conditions      []interface{}
+		CreatedAt       metav1.Time
 	}
 
 	//list the node from the pool with the given name
@@ -36,12 +38,32 @@ func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
+	var conditions []interface{}
+	for _, element := range node.Status.Conditions {
+		type Condition struct {
+			Type               v1.NodeConditionType
+			Status             v1.ConditionStatus
+			LastTransitionTime metav1.Time
+		}
+
+		//filter fields of conditions
+		condition := &Condition{
+			Type:               element.Type,
+			Status:             element.Status,
+			LastTransitionTime: element.LastTransitionTime,
+		}
+
+		//adds filtered condition to array of conditions
+		conditions = append(conditions, condition)
+	}
+
 	//adds the node to the response
 	response := &Node{
-		MemoryPressure: node.Status.Conditions[0].Status,
-		DiskPressure:   node.Status.Conditions[1].Status,
-		PIDPressure:    node.Status.Conditions[2].Status,
-		Ready:          node.Status.Conditions[3].Status,
+		Name:            node.Name,
+		MaxPods:         node.Status.Capacity.Pods(),
+		AllocatablePods: node.Status.Allocatable.Pods(),
+		Conditions:      conditions,
+		CreatedAt:       node.GetCreationTimestamp(),
 	}
 
 	return response, nil
