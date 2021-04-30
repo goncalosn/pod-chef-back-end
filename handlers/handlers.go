@@ -44,6 +44,7 @@ func ServiceHandler(e *echo.Echo, service ports.ServiceServices) {
 	servicesHandler := services.NewHTTPHandler(service)
 
 	e.GET("/services", servicesHandler.GetServicesByNamespace)
+	e.GET("/service", servicesHandler.GetServiceByNameAndNamespace)
 }
 
 func VolumeHandler(e *echo.Echo, service ports.VolumeServices) {

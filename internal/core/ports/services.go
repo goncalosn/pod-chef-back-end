@@ -25,6 +25,7 @@ type NamespaceServices interface {
 // Service stands for kubernetes service
 type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
+	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
 }
 
 type VolumeServices interface {
