@@ -58,14 +58,14 @@ func (serviceHandler *KubernetesClient) GetServiceByNameAndNamespace(name string
 		return nil, err
 	}
 
-	var response []*KubernetesService
+	var response *KubernetesService
 
 	//filter each field from the kubernetes service struct
 	for _, element := range services.Items {
 
 		if name == element.GetName() {
 			//adds service to the response
-			response = append(response, &KubernetesService{
+			response = &KubernetesService{
 				Name:           element.GetName(),
 				Namespace:      element.GetNamespace(),
 				Kind:           element.Spec.Type,
@@ -74,7 +74,7 @@ func (serviceHandler *KubernetesClient) GetServiceByNameAndNamespace(name string
 				LoadBalancerIP: element.Spec.LoadBalancerIP,
 				Selectors:      element.Spec.Selector,
 				Ports:          element.Spec.Ports,
-			})
+			}
 		}
 	}
 
