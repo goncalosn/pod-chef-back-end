@@ -18,8 +18,8 @@ func PodServices(kubernetesRepository ports.Pod) *pods.Service {
 	return pods.NewService(kubernetesRepository)
 }
 
-func DeploymentServices(k8DeploymentRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *deployments.Service {
-	return deployments.NewService(k8DeploymentRepository, k8NamespacesRepository)
+func DeploymentServices(k8DeploymentRepository ports.Deployment, k8NamespacesRepository ports.Namespace, k8ServicesRepository ports.Service) *deployments.Service {
+	return deployments.NewService(k8DeploymentRepository, k8NamespacesRepository, k8ServicesRepository)
 }
 
 func NamespaceServices(kubernetesRepository ports.Namespace) *namespaces.Service {

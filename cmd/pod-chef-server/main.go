@@ -28,7 +28,10 @@ func main() {
 	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
 	podServices := services.PodServices(kubernetesRepository.Pods)
 	namespaceServices := services.NamespaceServices(kubernetesRepository.Namespaces)
-	deploymentServices := services.DeploymentServices(kubernetesRepository.Deployments, kubernetesRepository.Namespaces)
+	deploymentServices := services.DeploymentServices(
+		kubernetesRepository.Deployments,
+		kubernetesRepository.Namespaces,
+		kubernetesRepository.Services)
 	serviceServices := services.ServiceServices(kubernetesRepository.Services)
 	volumeServices := services.VolumeServices(kubernetesRepository.Volumes)
 

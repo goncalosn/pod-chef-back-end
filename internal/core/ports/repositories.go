@@ -2,6 +2,7 @@ package ports
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 type Node interface {
@@ -29,6 +30,7 @@ type Namespace interface {
 type Service interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
+	CreateService(serv *v1.Service) (interface{}, error)
 }
 
 type Volume interface {

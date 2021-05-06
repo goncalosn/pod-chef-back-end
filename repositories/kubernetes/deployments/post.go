@@ -66,6 +66,7 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	return Deploy{res.Name}, nil
 }
 
+//TODO add namespace
 func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
 	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 

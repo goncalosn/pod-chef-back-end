@@ -1,12 +1,17 @@
 package deployments
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	ports "pod-chef-back-end/internal/core/ports"
 	httpError "pod-chef-back-end/pkg/errors"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/labstack/gommon/log"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -46,48 +51,39 @@ func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{
 	}
 	defer src.Close()
 
-	yamlToJSON := yaml.NewYAMLToJSONDecoder(src)
+	var buffer bytes.Buffer
 
-	// future json object parsed from yaml file
-	var dep *appsv1.Deployment
-	if err := yamlToJSON.Decode(&dep); err != nil {
+	_, err = buffer.ReadFrom(src)
+	if err != nil {
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	//check namespace
-	namespaces, err := srv.k8NamespacesRepository.GetNamespaces()
-	if err != nil {
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	content := buffer.String()
+	deployParts := strings.Split(content, "---")
+
+	var responses []interface{}
+
+	for _, part := range deployParts {
+		buffer.Reset()
+		buffer.WriteString(part)
+
+		parsedJSON, err := yaml.ToJSON(buffer.Bytes())
+		if err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		response, err := selectKind(srv, parsedJSON)
+		if err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		responses = append(responses, response)
 	}
 
-	if dep.Namespace == "" {
-		dep.Namespace = "default"
-	}
-
-	//verify corret namespace name
-	if ok := contains(namespaces, dep.Namespace); !ok {
-		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Namespace does not exist"}
-	}
-
-	//check if deployment name already exists
-	nameExists, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(dep.Name, dep.Namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	if nameExists {
-		//deployment name exists
-		return nil, &httpError.Error{Err: err, Code: http.StatusConflict, Message: "Deployment name already used."}
-	}
-
-	response, err := srv.k8DeploymentsRepository.CreateFileDeployment(dep)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	return responses, nil
 }
 
 func contains(array []string, str string) bool {
@@ -97,4 +93,61 @@ func contains(array []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func selectKind(srv *Service, parsedJSON []byte) (interface{}, error) {
+	//check namespace
+	namespaces, err := srv.k8NamespacesRepository.GetNamespaces()
+	if err != nil {
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	formatedJSON := strings.ToLower(string(parsedJSON))
+
+	if strings.Contains(formatedJSON, "\"kind\":\"deployment\"") {
+		var dep *appsv1.Deployment
+		if err := json.Unmarshal(parsedJSON, &dep); err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		if dep.Namespace == "" {
+			dep.Namespace = "default"
+		}
+
+		//verify corret namespace name
+		if ok := contains(namespaces, dep.Namespace); !ok {
+			return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Namespace does not exist"}
+		}
+
+		response, err := srv.k8DeploymentsRepository.CreateFileDeployment(dep)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	} else if strings.Contains(formatedJSON, "\"kind\":\"service\"") {
+		var serv *v1.Service
+		if err := json.Unmarshal(parsedJSON, &serv); err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		if serv.Namespace == "" {
+			serv.Namespace = "default"
+		}
+
+		//verify corret namespace name
+		if ok := contains(namespaces, serv.Namespace); !ok {
+			return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Namespace does not exist"}
+		}
+
+		response, err := srv.k8ServicesRepository.CreateService(serv)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	} else {
+		fmt.Println("unknown deploy")
+		return nil, nil
+	}
 }
