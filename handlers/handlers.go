@@ -1,6 +1,7 @@
 package http
 
 import (
+	auths "pod-chef-back-end/handlers/auths"
 	deployments "pod-chef-back-end/handlers/deployments"
 	namespaces "pod-chef-back-end/handlers/namespaces"
 	nodes "pod-chef-back-end/handlers/nodes"
@@ -51,4 +52,11 @@ func VolumeHandler(e *echo.Echo, service ports.VolumeServices) {
 	volumesHandler := volumes.NewHTTPHandler(service)
 
 	e.GET("/volumes", volumesHandler.GetVolumes)
+}
+
+func AuthHandler(e *echo.Echo, service ports.UserServices) {
+	authsHandler := auths.NewHTTPHandler(service)
+
+	e.POST("/login", authsHandler.Login)
+	e.POST("/signin", authsHandler.SignIn)
 }

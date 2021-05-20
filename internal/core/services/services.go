@@ -7,6 +7,7 @@ import (
 	nodes "pod-chef-back-end/internal/core/services/nodes"
 	pods "pod-chef-back-end/internal/core/services/pods"
 	services "pod-chef-back-end/internal/core/services/services"
+	user "pod-chef-back-end/internal/core/services/user"
 	volumes "pod-chef-back-end/internal/core/services/volumes"
 )
 
@@ -33,4 +34,8 @@ func ServiceServices(kubernetesRepository ports.Service) *services.Service {
 
 func VolumeServices(kubernetesRepository ports.Volume) *volumes.Service {
 	return volumes.NewService(kubernetesRepository)
+}
+
+func UserServices(mongoRepository ports.User) *user.Service {
+	return user.NewService(mongoRepository)
 }

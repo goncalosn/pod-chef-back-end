@@ -22,7 +22,6 @@ func (h *HTTPHandler) CreateDefaultDeployment(c echo.Context) error {
 	if err != nil {
 		log.Error(err)
 		return c.JSON(http.StatusInternalServerError, "Internal error")
-
 	}
 	replicasI32 := int32(replicasI64)
 

@@ -8,11 +8,11 @@ import (
 
 	handlers "pod-chef-back-end/handlers"
 	services "pod-chef-back-end/internal/core/services"
-	repositories "pod-chef-back-end/repositories/kubernetes"
+	k8Repository "pod-chef-back-end/repositories/kubernetes"
+	mongoRepository "pod-chef-back-end/repositories/mongodb"
 )
 
 func main() {
-
 	e := echo.New()
 
 	// Middleware
@@ -24,7 +24,7 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	kubernetesRepository := repositories.KubernetesRepository()
+	kubernetesRepository := k8Repository.KubernetesRepository()
 	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
 	podServices := services.PodServices(kubernetesRepository.Pods)
 	namespaceServices := services.NamespaceServices(kubernetesRepository.Namespaces)
@@ -35,17 +35,20 @@ func main() {
 	serviceServices := services.ServiceServices(kubernetesRepository.Services)
 	volumeServices := services.VolumeServices(kubernetesRepository.Volumes)
 
+	mRepository := mongoRepository.MongoRepository()
+	userServices := services.UserServices(mRepository)
+
 	handlers.NodeHandler(e, nodeServices)
 	handlers.PodHandler(e, podServices)
 	handlers.DeploymentHandler(e, deploymentServices)
 	handlers.NamespaceHandler(e, namespaceServices)
 	handlers.ServiceHandler(e, serviceServices)
 	handlers.VolumeHandler(e, volumeServices)
+	handlers.AuthHandler(e, userServices)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
 	e.Logger.Fatal(e.Start(":1323"))
-
 }

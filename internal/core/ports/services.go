@@ -1,6 +1,9 @@
 package ports
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+	"pod-chef-back-end/pkg/auth"
+)
 
 type NodeServices interface {
 	GetNode(name string) (interface{}, error)
@@ -30,4 +33,9 @@ type ServiceServices interface {
 
 type VolumeServices interface {
 	GetVolumes() (interface{}, error)
+}
+
+type UserServices interface {
+	SignIn(user auth.User) (interface{}, error)
+	Login(email string) (interface{}, error)
 }
