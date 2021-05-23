@@ -42,7 +42,7 @@ func main() {
 	handlers.ServiceHandler(e, serviceServices)
 	handlers.VolumeHandler(e, volumeServices)
 
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/api", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
