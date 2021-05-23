@@ -1,8 +1,6 @@
-package users
+package user
 
-import (
-	"go.mongodb.org/mongo-driver/mongo"
-)
+import "go.mongodb.org/mongo-driver/mongo"
 
 type MongoClient struct {
 	Client *mongo.Client

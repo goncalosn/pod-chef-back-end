@@ -1,17 +1,17 @@
 package mongodb
 
 import (
-	users "pod-chef-back-end/repositories/mongodb/users"
+	"pod-chef-back-end/repositories/mongodb/user"
 )
 
 type mongoRepository struct {
-	User *users.MongoClient
+	User *user.MongoClient
 }
 
 func MongoRepository() *mongoRepository {
 	client := Client()
 
 	return &mongoRepository{
-		User: users.New(client),
+		User: user.New(client),
 	}
 }

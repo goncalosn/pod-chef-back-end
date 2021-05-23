@@ -10,15 +10,15 @@ import (
 )
 
 func Client() *mongo.Client {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
-		"mongodb+srv://admin:niggapassword@cluster0.oy5rg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-	))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://admin:yYJFMpHCrz5uj327@cluster0.oy5rg.mongodb.net/main?retryWrites=true&w=majority"))
 	if err != nil {
 		log.Fatal(err)
-		panic("mongo error")
-		//return nil
+	}
+
+	if err = client.Ping(ctx, nil); err != nil {
+		log.Fatal(err)
 	}
 
 	return client

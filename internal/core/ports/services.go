@@ -2,7 +2,6 @@ package ports
 
 import (
 	"mime/multipart"
-	"pod-chef-back-end/pkg/auth"
 )
 
 type NodeServices interface {
@@ -25,7 +24,7 @@ type NamespaceServices interface {
 	GetNamespaces() (interface{}, error)
 }
 
-// Service stands for kubernetes service
+// ServiceServices stands for kubernetes service
 type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
@@ -36,6 +35,6 @@ type VolumeServices interface {
 }
 
 type UserServices interface {
-	SignIn(user auth.User) (interface{}, error)
-	Login(email string) (interface{}, error)
+	Register(username string, email string, password string) (interface{}, error)
+	Authenticate(email string, password string) (interface{}, error)
 }

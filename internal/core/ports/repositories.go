@@ -1,8 +1,6 @@
 package ports
 
 import (
-	"pod-chef-back-end/pkg/auth"
-
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 )
@@ -39,7 +37,7 @@ type Volume interface {
 	GetVolumes() (interface{}, error)
 }
 
-type User interface {
-	SignIn(user auth.User) (interface{}, error)
-	Login(email string) (interface{}, error)
+type UserAuth interface {
+	Register(username string, email string, password string) (interface{}, error)
+	Authenticate(email string, password string) (interface{}, error)
 }

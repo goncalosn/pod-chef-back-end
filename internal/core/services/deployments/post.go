@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
-	ports "pod-chef-back-end/internal/core/ports"
 	httpError "pod-chef-back-end/pkg/errors"
 	"strings"
 
@@ -16,13 +15,6 @@ import (
 	"github.com/labstack/gommon/log"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
-
-func NewPostService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
-	return &Service{
-		k8DeploymentsRepository: k8DeploymentsRepository,
-		k8NamespacesRepository:  k8NamespacesRepository,
-	}
-}
 
 func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
 	nameExists, err := srv.k8DeploymentsRepository.CheckRepeatedDeployName(name, "default")
@@ -49,7 +41,12 @@ func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
-	defer src.Close()
+	defer func(src multipart.File) {
+		err := src.Close()
+		if err != nil {
+			log.Error(err)
+		}
+	}(src)
 
 	var buffer bytes.Buffer
 

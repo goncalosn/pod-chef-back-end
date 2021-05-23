@@ -10,10 +10,11 @@ import (
 
 func (h *HTTPHandler) Login(c echo.Context) error {
 	email := c.FormValue("email")
+	password := c.FormValue("password")
 	//TODO this shit, make login properly
-	res, err := h.UserServices.Login(email)
+	res, err := h.UserServices.Authenticate(email, password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "Login Failed")
+		return c.JSON(http.StatusInternalServerError, "Authenticate Failed")
 	}
 
 	return c.JSONPretty(http.StatusCreated, res, " ")
@@ -22,11 +23,11 @@ func (h *HTTPHandler) Login(c echo.Context) error {
 func (h *HTTPHandler) SignIn(c echo.Context) error {
 	var user auth.User
 	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, "Error parsing json")
+		return c.JSON(http.StatusInternalServerError, "Error parsing json")
 	}
-	res, err := h.UserServices.SignIn(user)
+	res, err := h.UserServices.Register(user.Username, user.Email, user.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "Login Failed")
+		return c.JSON(http.StatusInternalServerError, "Authentication Error")
 	}
 
 	return c.JSONPretty(http.StatusCreated, res, " ")

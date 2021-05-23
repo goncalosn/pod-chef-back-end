@@ -36,7 +36,7 @@ func main() {
 	volumeServices := services.VolumeServices(kubernetesRepository.Volumes)
 
 	mRepository := mongoRepository.MongoRepository()
-	userServices := services.UserServices(mRepository)
+	userServices := services.UserServices(mRepository.User)
 
 	handlers.NodeHandler(e, nodeServices)
 	handlers.PodHandler(e, podServices)
