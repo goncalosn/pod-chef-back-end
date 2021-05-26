@@ -34,3 +34,7 @@ type Service interface {
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
 	CreateService(serv *v1.Service) (interface{}, error)
 }
+
+type Ingress interface {
+	GetIngress(name string) (interface{}, error)
+}

@@ -7,13 +7,13 @@ import (
 	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/gommon/log"
-	corev1 "k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 //Get all namespaces
 func (serviceHandler *KubernetesClient) AddNamespace(name string) (interface{}, error) {
-	namespace := &corev1.Namespace{
+	namespace := &apiv1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},

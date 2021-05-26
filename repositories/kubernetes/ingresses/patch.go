@@ -1,4 +1,4 @@
-package deployments
+package ingresses
 
 // import (
 // 	"net/http"

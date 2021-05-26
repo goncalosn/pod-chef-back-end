@@ -29,7 +29,9 @@ func main() {
 	deploymentServices := services.DeploymentServices(
 		kubernetesRepository.Deployments,
 		kubernetesRepository.Namespaces,
-		kubernetesRepository.Services)
+		kubernetesRepository.Services,
+		kubernetesRepository.Ingresses,
+	)
 	serviceServices := services.ServiceServices(kubernetesRepository.Services)
 
 	handlers.NodeHandler(e, nodeServices)

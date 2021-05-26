@@ -29,3 +29,7 @@ type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
 }
+
+type IngressServices interface {
+	GetIngress(name string) (interface{}, error)
+}

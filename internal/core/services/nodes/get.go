@@ -1,5 +1,13 @@
 package nodes
 
+import ports "pod-chef-back-end/internal/core/ports"
+
+func NewGetService(kubernetesRepository ports.Node) *Service {
+	return &Service{
+		kubernetesRepository: kubernetesRepository,
+	}
+}
+
 func (srv *Service) GetNode(name string) (interface{}, error) {
 	node, err := srv.kubernetesRepository.GetNode(name)
 

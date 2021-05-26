@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	deployments "pod-chef-back-end/repositories/kubernetes/deployments"
+	ingresses "pod-chef-back-end/repositories/kubernetes/ingresses"
 	namespaces "pod-chef-back-end/repositories/kubernetes/namespaces"
 	nodes "pod-chef-back-end/repositories/kubernetes/nodes"
 	pods "pod-chef-back-end/repositories/kubernetes/pods"
@@ -14,6 +15,7 @@ type kubernetesRepository struct {
 	Deployments *deployments.KubernetesClient
 	Namespaces  *namespaces.KubernetesClient
 	Services    *services.KubernetesClient
+	Ingresses   *ingresses.KubernetesClient
 }
 
 func KubernetesRepository() *kubernetesRepository {
@@ -25,5 +27,6 @@ func KubernetesRepository() *kubernetesRepository {
 		Deployments: deployments.New(client),
 		Namespaces:  namespaces.New(client),
 		Services:    services.New(client),
+		Ingresses:   ingresses.New(client),
 	}
 }
