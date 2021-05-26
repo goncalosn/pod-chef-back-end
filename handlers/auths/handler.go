@@ -1,6 +1,6 @@
 package auths
 
-import ports "pod-chef-back-end/internal/core/ports"
+import "pod-chef-back-end/internal/core/ports"
 
 type HTTPHandler struct {
 	UserServices ports.UserServices

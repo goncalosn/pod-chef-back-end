@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
 	"pod-chef-back-end/pkg/auth"
 	"time"
 
@@ -15,17 +17,14 @@ func (serviceHandler *MongoClient) Register(username string, email string, rawPa
 	defer cancel()
 
 	token := auth.GenerateTokenHash()
-	fmt.Println([]byte(token))
-	// TODO this throws errors???
 	password := auth.EncryptPassword(rawPassword, token)
-	fmt.Println([]byte(password))
 
 	// TODO dont save empty users
 	res, err := serviceHandler.Client.Database("main").Collection("users").InsertOne(ctx, bson.M{
 		"username": username,
 		"email":    email,
-		"password": password,
-		"token":    token,
+		"password": base64.StdEncoding.EncodeToString(password),
+		"token":    base64.StdEncoding.EncodeToString(token),
 	})
 	if err != nil {
 		return nil, err
@@ -39,10 +38,17 @@ func (serviceHandler *MongoClient) Authenticate(email string, rawPassword string
 	defer cancel()
 
 	var user auth.User
-	if err := serviceHandler.Client.Database("main").Collection("users").FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
+	err := serviceHandler.Client.Database("main").Collection("users").FindOne(ctx, bson.D{{"email", email}}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("no email in db")
+		}
 		return nil, err
 	}
-	if auth.DecryptPassword(user.Password, user.Token) != rawPassword {
+	token, _ := base64.StdEncoding.DecodeString(user.Token)
+	crypt, _ := base64.StdEncoding.DecodeString(user.Password)
+	decrypt := auth.DecryptPassword(crypt, token)
+	if decrypt != rawPassword {
 		return nil, errors.New("wrong password")
 	}
 

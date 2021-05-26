@@ -9,10 +9,11 @@ import (
 )
 
 func (h *HTTPHandler) Login(c echo.Context) error {
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-	//TODO this shit, make login properly
-	res, err := h.UserServices.Authenticate(email, password)
+	var user auth.User
+	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
+		return c.JSON(http.StatusInternalServerError, "Error parsing json")
+	}
+	res, err := h.UserServices.Authenticate(user.Email, user.Password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Authenticate Failed")
 	}
