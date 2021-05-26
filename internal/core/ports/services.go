@@ -20,14 +20,12 @@ type DeploymentServices interface {
 
 type NamespaceServices interface {
 	GetNamespaces() (interface{}, error)
+	AddNamespace(name string) (interface{}, error)
+	CheckRepeatedNamespace(name string) (interface{}, error)
 }
 
 // Service stands for kubernetes service
 type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
-}
-
-type VolumeServices interface {
-	GetVolumes() (interface{}, error)
 }

@@ -43,6 +43,10 @@ func (h *HTTPHandler) CreateFileDeployment(c echo.Context) error {
 		return c.JSON(kubernetesError.Code, kubernetesError)
 	}
 
+	if file.Header.Get("Content-Type") == "application/json" {
+		return c.JSON(http.StatusBadRequest, "JSON file not allowed. Please send file of YAML type.")
+	}
+
 	response, err := h.DeploymentServices.CreateFileDeployment(file)
 
 	if err != nil {

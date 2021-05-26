@@ -23,12 +23,12 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
-
 	kubernetesRepository := repositories.KubernetesRepository()
 	nodeServices := services.NodeServices(kubernetesRepository.Nodes)
 	podServices := services.PodServices(kubernetesRepository.Pods)
 	deploymentServices := services.DeploymentServices(
 		kubernetesRepository.Deployments,
+		kubernetesRepository.Namespaces,
 		kubernetesRepository.Services)
 	serviceServices := services.ServiceServices(kubernetesRepository.Services)
 
