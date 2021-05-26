@@ -6,7 +6,6 @@ import (
 	nodes "pod-chef-back-end/repositories/kubernetes/nodes"
 	pods "pod-chef-back-end/repositories/kubernetes/pods"
 	services "pod-chef-back-end/repositories/kubernetes/services"
-	volumes "pod-chef-back-end/repositories/kubernetes/volumes"
 )
 
 type kubernetesRepository struct {
@@ -15,7 +14,6 @@ type kubernetesRepository struct {
 	Deployments *deployments.KubernetesClient
 	Namespaces  *namespaces.KubernetesClient
 	Services    *services.KubernetesClient
-	Volumes     *volumes.KubernetesClient
 }
 
 func KubernetesRepository() *kubernetesRepository {
@@ -27,6 +25,5 @@ func KubernetesRepository() *kubernetesRepository {
 		Deployments: deployments.New(client),
 		Namespaces:  namespaces.New(client),
 		Services:    services.New(client),
-		Volumes:     volumes.New(client),
 	}
 }
