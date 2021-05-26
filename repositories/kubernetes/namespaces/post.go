@@ -7,20 +7,27 @@ import (
 	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/gommon/log"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// //Get all namespaces
-// func (serviceHandler *KubernetesClient) AddNamespaces(name string) (interface{}, error) {
-// 	namespace, err := serviceHandler.Clientset.CoreV1().Namespaces().Create(context.TODO(), metav1.ObjectMeta{Name: name}, metav1.CreateOptions{})
+//Get all namespaces
+func (serviceHandler *KubernetesClient) AddNamespace(name string) (interface{}, error) {
+	namespace := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}
 
-// 	if err != nil {
-// 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-// 	}
+	namespace, err := serviceHandler.Clientset.CoreV1().Namespaces().Create(context.TODO(), namespace, metav1.CreateOptions{})
 
-// 	return namespace, nil
+	if err != nil {
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
 
-// }
+	return namespace, nil
+
+}
 
 // True means there is a namespace with the same name
 func (serviceHandler *KubernetesClient) CheckRepeatedNamespace(name string) (bool, error) {

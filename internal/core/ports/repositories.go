@@ -25,6 +25,7 @@ type Deployment interface {
 type Namespace interface {
 	GetNamespaces() ([]string, error)
 	CheckRepeatedNamespace(name string) (bool, error)
+	AddNamespace(name string) (interface{}, error)
 }
 
 // Service stands for kubernetes service
