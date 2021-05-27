@@ -37,4 +37,5 @@ type Service interface {
 
 type Ingress interface {
 	GetIngress(name string) (interface{}, error)
+	CreateIngress(namespace string, host string) (interface{}, error)
 }

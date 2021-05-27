@@ -1,6 +1,7 @@
 package deployments
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
@@ -11,14 +12,16 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/labstack/gommon/log"
 )
 
-func NewPostService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace) *Service {
+func NewPostService(k8DeploymentsRepository ports.Deployment, k8NamespacesRepository ports.Namespace, k8IngressesRepository ports.Ingress) *Service {
 	return &Service{
 		k8DeploymentsRepository: k8DeploymentsRepository,
 		k8NamespacesRepository:  k8NamespacesRepository,
+		k8IngressesRepository:   k8IngressesRepository,
 	}
 }
 
@@ -32,59 +35,53 @@ func (srv *Service) CreateDefaultDeployment(name string, replicas *int32, image 
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Deployment name already used."}
 	}
 
-	node, err := srv.k8DeploymentsRepository.CreateDefaultDeployment(name, replicas, image)
+	deploy, err := srv.k8DeploymentsRepository.CreateDefaultDeployment(name, replicas, image)
 	if err != nil {
 		return nil, err
 	}
 
-	return node, nil
+	return deploy, nil
 }
 
 func (srv *Service) CreateFileDeployment(file *multipart.FileHeader) (interface{}, error) {
 
-	// src, err := file.Open()
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	// }
-	// defer src.Close()
-
-	// var buffer bytes.Buffer
-
-	// _, err = buffer.ReadFrom(src)
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	// }
-
-	// content := buffer.String()
-	// deployParts := strings.Split(content, "---")
-
-	// var responses []interface{}
-
-	// for _, part := range deployParts {
-	// 	buffer.Reset()
-	// 	buffer.WriteString(part)
-
-	// 	parsedJSON, err := yaml.ToJSON(buffer.Bytes())
-	// 	if err != nil {
-	// 		log.Error(err)
-	// 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	// 	}
-
-	// 	response, err := selectKind(srv, parsedJSON)
-	// 	if err != nil {
-	// 		log.Error(err)
-	// 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	// 	}
-
-	// 	responses = append(responses, response)
-	// }
-
-	responses, err := srv.k8IngressesRepository.GetIngress("web-ingress")
+	src, err := file.Open()
 	if err != nil {
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+	defer src.Close()
+
+	var buffer bytes.Buffer
+
+	_, err = buffer.ReadFrom(src)
+	if err != nil {
+		log.Error(err)
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	content := buffer.String()
+	deployParts := strings.Split(content, "---")
+
+	var responses []interface{}
+
+	for _, part := range deployParts {
+		buffer.Reset()
+		buffer.WriteString(part)
+
+		parsedJSON, err := yaml.ToJSON(buffer.Bytes())
+		if err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		response, err := selectKind(srv, parsedJSON)
+		if err != nil {
+			log.Error(err)
+			return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		}
+
+		responses = append(responses, response)
 	}
 
 	return responses, nil
