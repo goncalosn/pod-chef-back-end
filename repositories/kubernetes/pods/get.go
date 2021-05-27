@@ -30,7 +30,6 @@ func (serviceHandler *KubernetesClient) GetPodsByNodeAndNamespace(node string, n
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No pods found"}
 	} else if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}

@@ -22,7 +22,6 @@ func (serviceHandler *KubernetesClient) GetDeployments() (interface{}, error) {
 
 	list, err := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}

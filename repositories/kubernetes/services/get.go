@@ -2,7 +2,10 @@ package services
 
 import (
 	"context"
+	"net/http"
+	httpError "pod-chef-back-end/pkg/errors"
 
+	"github.com/labstack/gommon/log"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,7 +21,8 @@ func (serviceHandler *KubernetesClient) GetServicesByNamespace(namespace string)
 
 	services, err := serviceHandler.Clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*KubernetesService
@@ -55,7 +59,8 @@ func (serviceHandler *KubernetesClient) GetServiceByNameAndNamespace(name string
 
 	services, err := serviceHandler.Clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response *KubernetesService

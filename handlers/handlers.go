@@ -28,8 +28,7 @@ func DeploymentHandler(e *echo.Echo, service ports.DeploymentServices) {
 
 	e.GET("/deployments", deploymentsHandler.GetDeployments)
 	e.DELETE("/deployment/:id", deploymentsHandler.DeleteDeployment)
-	e.POST("/deployment/default-create", deploymentsHandler.CreateDefaultDeployment)
-	e.POST("/deployment/advanced-create", deploymentsHandler.CreateFileDeployment)
+	e.POST("/deployment", deploymentsHandler.CreateDeployment)
 }
 
 func ServiceHandler(e *echo.Echo, service ports.ServiceServices) {

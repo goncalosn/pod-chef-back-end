@@ -1,7 +1,5 @@
 package ports
 
-import "mime/multipart"
-
 type NodeServices interface {
 	GetNode(name string) (interface{}, error)
 	GetNodes() (interface{}, error)
@@ -12,25 +10,25 @@ type PodServices interface {
 }
 
 type DeploymentServices interface {
-	CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error)
-	CreateFileDeployment(*multipart.FileHeader) (interface{}, error)
+	CreateDeployment(token string, replicas *int32, image string) (interface{}, error)
 	GetDeployments() (interface{}, error)
 	DeleteDeployment(name string) (interface{}, error)
 }
 
 type NamespaceServices interface {
 	GetNamespaces() (interface{}, error)
-	AddNamespace(name string) (interface{}, error)
-	CheckRepeatedNamespace(name string) (interface{}, error)
+	CreateNamespace(name string) (interface{}, error)
+	DeleteNamespace(name string) (interface{}, error)
 }
 
 // Service stands for kubernetes service
 type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
+	CreateClusterIPService(namespace string, name string) (interface{}, error)
 }
 
 type IngressServices interface {
 	GetIngress(name string) (interface{}, error)
-	CreateIngress(namespace string, host string) (interface{}, error)
+	CreateIngress(namespace string, name string, host string) (interface{}, error)
 }

@@ -33,7 +33,6 @@ func (serviceHandler *KubernetesClient) CreateService(service *v1.Service) (inte
 
 	res, err := servicesClient.Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}

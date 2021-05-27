@@ -6,22 +6,21 @@ import (
 
 	httpError "pod-chef-back-end/pkg/errors"
 
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/labstack/gommon/log"
 	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (ingressHandler *KubernetesClient) CreateIngress(namespace string, host string) (interface{}, error) {
+func (ingressHandler *KubernetesClient) CreateIngress(namespace string, name string, host string) (interface{}, error) {
 	ingressClient := ingressHandler.Clientset.NetworkingV1().Ingresses(namespace)
-
-	uuid := uuid.NewV4()
 
 	var pathType string = "Prefix"
 
 	ingress := &networkingv1.Ingress{
-		ObjectMeta: v1.ObjectMeta{Name: uuid.String(), Namespace: namespace},
+		ObjectMeta: v1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
 		Spec: networkingv1.IngressSpec{
 			Rules: []networkingv1.IngressRule{
 				{

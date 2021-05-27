@@ -1,10 +1,5 @@
 package ports
 
-import (
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
-)
-
 type Node interface {
 	GetNode(name string) (interface{}, error)
 	GetNodes() (interface{}, error)
@@ -15,27 +10,25 @@ type Pod interface {
 }
 
 type Deployment interface {
-	CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error)
-	CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error)
+	CreateDeployment(namespaceUuid string, name string, replicas *int32, image string) (interface{}, error)
 	GetDeployments() (interface{}, error)
-	CheckRepeatedDeployName(name string, namespace string) (bool, error)
 	DeleteDeployment(name string) (interface{}, error)
 }
 
 type Namespace interface {
 	GetNamespaces() ([]string, error)
-	CheckRepeatedNamespace(name string) (bool, error)
-	AddNamespace(name string) (interface{}, error)
+	CreateNamespace(name string) (interface{}, error)
+	DeleteNamespace(name string) (interface{}, error)
 }
 
 // Service stands for kubernetes service
 type Service interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateService(serv *v1.Service) (interface{}, error)
+	CreateClusterIPService(namespace string, name string) (interface{}, error)
 }
 
 type Ingress interface {
 	GetIngress(name string) (interface{}, error)
-	CreateIngress(namespace string, host string) (interface{}, error)
+	CreateIngress(namespace string, name string, host string) (interface{}, error)
 }

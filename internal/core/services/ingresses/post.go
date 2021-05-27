@@ -10,8 +10,8 @@ func NewPostService(kubernetesRepository ports.Ingress) *Service {
 	}
 }
 
-func (srv *Service) CreateIngress(namespace string, host string) (interface{}, error) {
-	response, err := srv.kubernetesRepository.CreateIngress(namespace, host)
+func (srv *Service) CreateIngress(namespace string, name string, host string) (interface{}, error) {
+	response, err := srv.kubernetesRepository.CreateIngress(namespace, name, host)
 
 	if err != nil {
 		return nil, err

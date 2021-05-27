@@ -17,7 +17,6 @@ func (serviceHandler *KubernetesClient) DeleteDeployment(name string) (interface
 	if err := deploymentsClient.Delete(context.TODO(), name, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}); err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}

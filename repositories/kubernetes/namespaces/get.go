@@ -6,6 +6,7 @@ import (
 
 	httpError "pod-chef-back-end/pkg/errors"
 
+	"github.com/labstack/gommon/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,6 +15,7 @@ func (serviceHandler *KubernetesClient) GetNamespaces() ([]string, error) {
 	namespaces, err := serviceHandler.Clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil {
+		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 

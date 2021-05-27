@@ -16,24 +16,27 @@ type Deploy struct {
 	Name string
 }
 
-func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error) {
-	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+func (serviceHandler *KubernetesClient) CreateDeployment(namespace string, name string, replicas *int32, image string) (interface{}, error) {
+	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(namespace)
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				"run": "app",
+			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "demo",
+					"run": "app",
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "demo",
+						"run": "app",
 					},
 				},
 				Spec: apiv1.PodSpec{
@@ -43,9 +46,7 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 							Image: image,
 							Ports: []apiv1.ContainerPort{
 								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 80,
+									ContainerPort: 8080,
 								},
 							},
 						},
@@ -58,45 +59,9 @@ func (serviceHandler *KubernetesClient) CreateDefaultDeployment(name string, rep
 	// result is the full deployment created
 	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return Deploy{res.Name}, nil
-}
-
-//TODO add namespace
-func (serviceHandler *KubernetesClient) CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error) {
-	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
-
-	res, err := deploymentsClient.Create(context.TODO(), dep, metav1.CreateOptions{})
-	if err != nil {
-		//service error
-		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	}
-
-	return Deploy{res.Name}, nil
-}
-
-// True means there is a deploy with the same name
-func (serviceHandler *KubernetesClient) CheckRepeatedDeployName(name string, namespace string) (bool, error) {
-	deploymentsClient := serviceHandler.Clientset.AppsV1().Deployments(namespace)
-	deploymentsList, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
-
-	if err != nil {
-		//service error
-		log.Error(err)
-		return true, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "internal error"}
-	}
-
-	for _, dep := range deploymentsList.Items {
-		if dep.Name == name {
-			//returns true if there is allready a deploy with the same name
-			return true, nil
-		}
-	}
-
-	return false, nil
 }

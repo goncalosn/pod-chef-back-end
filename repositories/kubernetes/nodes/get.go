@@ -33,7 +33,6 @@ func (serviceHandler *KubernetesClient) GetNode(name string) (interface{}, error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Node not found"}
 	} else if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
@@ -87,7 +86,6 @@ func (serviceHandler *KubernetesClient) GetNodes() (interface{}, error) {
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No nodes found"}
 	} else if err != nil {
-		//service error
 		log.Error(err)
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}

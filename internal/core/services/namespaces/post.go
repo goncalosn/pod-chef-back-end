@@ -10,18 +10,8 @@ func NewAddService(kubernetesRepository ports.Namespace) *Service {
 	}
 }
 
-func (srv *Service) AddNamespace(name string) (interface{}, error) {
-	response, err := srv.kubernetesRepository.AddNamespace(name)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-func (srv *Service) CheckRepeatedNamespace(name string) (interface{}, error) {
-	response, err := srv.kubernetesRepository.CheckRepeatedNamespace(name)
+func (srv *Service) CreateNamespace(name string) (interface{}, error) {
+	response, err := srv.kubernetesRepository.CreateNamespace(name)
 
 	if err != nil {
 		return nil, err
