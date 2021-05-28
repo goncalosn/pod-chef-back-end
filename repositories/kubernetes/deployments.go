@@ -13,7 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (repo *KubernetesRepository) GetDeployments() (interface{}, error) {
+//GetDeploymentByNameAndNamespace method responsible for getting a deployment by it's namespace from the namespace and name
+func (repo *KubernetesRepository) GetDeploymentByNameAndNamespace(name string, namespace string) (interface{}, error) {
+	//data structure which will be returned
 	type Deploy struct {
 		Name      string
 		Namespace string
@@ -21,29 +23,25 @@ func (repo *KubernetesRepository) GetDeployments() (interface{}, error) {
 		Status    v1.DeploymentStatus
 	}
 
-	list, err := repo.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions{})
+	//call driven adapter responsible for getting a deployment from the kubernetes cluster
+	response, err := repo.Clientset.AppsV1().Deployments(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	}
-
-	var response []Deploy
-
-	for _, dep := range list.Items {
-		response = append(response, Deploy{
-			Name:      dep.Name,
-			Namespace: dep.Namespace,
-			Images:    dep.Spec.Template.Spec.Containers,
-			Status:    dep.Status,
-		})
 	}
 
 	return response, nil
 }
 
+//CreateDeployment method responsible for creating a deployment from namespace, name, replicas and image
 func (repo *KubernetesRepository) CreateDeployment(namespace string, name string, replicas *int32, image string) (interface{}, error) {
+	//call driven adapter responsible for getting a deployment from the kubernetes cluster
 	deploymentsClient := repo.Clientset.AppsV1().Deployments(namespace)
 
+	//structure of the deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -81,26 +79,15 @@ func (repo *KubernetesRepository) CreateDeployment(namespace string, name string
 		},
 	}
 
-	// result is the full deployment created
+	// create deployment
 	res, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return res.Name, nil
-}
-
-func (repo *KubernetesRepository) DeleteDeployment(name string) (interface{}, error) {
-	deletePolicy := metav1.DeletePropagationForeground
-	deploymentsClient := repo.Clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
-
-	if err := deploymentsClient.Delete(context.TODO(), name, metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	}); err != nil {
-		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	}
-
-	return nil, nil
 }

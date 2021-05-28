@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//Get node by name
-func (repo *KubernetesRepository) GetNode(name string) (interface{}, error) {
-	//struct with the needed values from the node
+//GetNodeByName method responsible for getting a node from the cluster
+func (repo *KubernetesRepository) GetNodeByName(name string) (interface{}, error) {
+	//data structure which will be returned
 	type Node struct {
 		Name            string
 		MaxPods         *resource.Quantity
@@ -38,6 +38,8 @@ func (repo *KubernetesRepository) GetNode(name string) (interface{}, error) {
 	}
 
 	var conditions []interface{}
+
+	//mapping through the node conditions
 	for _, element := range node.Status.Conditions {
 		type Condition struct {
 			Type               v1.NodeConditionType
@@ -68,7 +70,7 @@ func (repo *KubernetesRepository) GetNode(name string) (interface{}, error) {
 	return response, nil
 }
 
-//Get all nodes in cluster
+//GetNodes method responsible for getting nodes from the cluster
 func (repo *KubernetesRepository) GetNodes() (interface{}, error) {
 	//struct with the needed values from the nodes
 	type Node struct {

@@ -1,14 +1,14 @@
 package ports
 
+//KubernetesRepository interface holding all the kubernetes respository methods
 type KubernetesRepository interface {
-	GetNode(name string) (interface{}, error)
+	GetNodeByName(name string) (interface{}, error)
 	GetNodes() (interface{}, error)
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(namespaceUuid string, name string, replicas *int32, image string) (interface{}, error)
-	GetDeployments() (interface{}, error)
-	DeleteDeployment(name string) (interface{}, error)
+	CreateDeployment(namespaceUUID string, name string, replicas *int32, image string) (interface{}, error)
+	GetDeploymentByNameAndNamespace(name string, namespace string) (interface{}, error)
 
 	GetNamespaces() ([]string, error)
 	CreateNamespace(name string) (interface{}, error)
@@ -18,6 +18,6 @@ type KubernetesRepository interface {
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
 	CreateClusterIPService(namespace string, name string) (interface{}, error)
 
-	GetIngress(name string) (interface{}, error)
+	GetIngressByNameAndNamespace(name string, namespace string) (interface{}, error)
 	CreateIngress(namespace string, name string, host string) (interface{}, error)
 }

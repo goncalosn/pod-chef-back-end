@@ -10,16 +10,19 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
+//KubernetesRepository kubernetes clientset responsible for acessing the cluster api
 type KubernetesRepository struct {
 	Clientset *kubernetes.Clientset
 }
 
+//NewKubernetesRepository new connection to the cluster
 func NewKubernetesRepository() *KubernetesRepository {
 	return &KubernetesRepository{
 		Clientset: Client(),
 	}
 }
 
+//Client responsible for creating the connection to the cluster
 func Client() *kubernetes.Clientset {
 	var kubeconfig *string
 

@@ -7,35 +7,35 @@ import (
 	httpError "pod-chef-back-end/pkg/errors"
 
 	"github.com/labstack/gommon/log"
-	apiv1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (ingressHandler *KubernetesRepository) GetIngress(name string) (interface{}, error) {
-	list, err := ingressHandler.Clientset.NetworkingV1().Ingresses(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions{})
+//GetIngressByNameAndNamespace method responsible for getting an ingress by it's name and namespace
+func (ingressHandler *KubernetesRepository) GetIngressByNameAndNamespace(name string, namespace string) (interface{}, error) {
+	//call driven adapter responsible for getting a ingress from the kubernetes cluster
+	response, err := ingressHandler.Clientset.NetworkingV1().Ingresses(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
-	}
-
-	var response *networkingv1.Ingress
-
-	for _, ingress := range list.Items {
-		if ingress.Name == name {
-			response = &ingress
-		}
 	}
 
 	return response, nil
 }
 
+//CreateIngress method responsible for creating an ingress by it's name and namespace and a host
 func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name string, host string) (interface{}, error) {
+	//call driven adapter responsible for dealing wtih ingresses
 	ingressClient := ingressHandler.Clientset.NetworkingV1().Ingresses(namespace)
 
+	//path type in which the ingress will be redirecting the traffic to the user
 	var pathType string = "Prefix"
 
+	//data structure that will be used to create the ingress
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      name,
@@ -68,10 +68,14 @@ func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name
 		},
 	}
 
+	//call driven adapter responsible for creating a ingress inside the kubernetes cluster
 	ingress, err := ingressClient.Create(context.TODO(), ingress, v1.CreateOptions{})
 
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 

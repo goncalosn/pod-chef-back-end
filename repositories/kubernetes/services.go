@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-//Get all services
+//GetServicesByNamespace method responsible for getting a service by namespace
 func (repo *KubernetesRepository) GetServicesByNamespace(namespace string) (interface{}, error) {
 	//struct with the needed values from the services
 	type KubernetesService struct {
@@ -22,9 +22,13 @@ func (repo *KubernetesRepository) GetServicesByNamespace(namespace string) (inte
 		CreatedAt metav1.Time
 	}
 
+	//call driven adapter responsible for getting a service from the kubernetes cluster
 	services, err := repo.Clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
@@ -46,7 +50,7 @@ func (repo *KubernetesRepository) GetServicesByNamespace(namespace string) (inte
 	return response, nil
 }
 
-//Get service by namespace
+//GetServiceByNameAndNamespace method responsible for getting a sevice from namespace using it's name
 func (repo *KubernetesRepository) GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error) {
 	//struct with the needed values from the services
 	type KubernetesService struct {
@@ -60,9 +64,13 @@ func (repo *KubernetesRepository) GetServiceByNameAndNamespace(name string, name
 		Ports          []v1.ServicePort
 	}
 
+	//call driven adapter responsible for getting a deployment from the kubernetes cluster
 	services, err := repo.Clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
@@ -89,8 +97,11 @@ func (repo *KubernetesRepository) GetServiceByNameAndNamespace(name string, name
 	return response, nil
 }
 
+//CreateClusterIPService method responsible for creating a cluster ip
 func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name string) (interface{}, error) {
 
+	//data structure used to create the service
+	//some of the data is based on the haproxy documentation. link on read me file
 	service := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -118,9 +129,13 @@ func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name 
 		},
 	}
 
+	//call driven adapter responsible for creating a service inside the kubernetes cluster
 	serviceClient, err := repo.Clientset.CoreV1().Services(namespace).Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil {
+		//print the error stack
 		log.Error(err)
+
+		//return a custom error
 		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 

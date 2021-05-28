@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-//Get all pods in node and namespace
+//GetPodsByNodeAndNamespace method responsible for getting pod data from the namespace and node
 func (repo *KubernetesRepository) GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error) {
 	//struct with the needed values from the pods
 	type KubernetesRepository struct {
@@ -21,7 +21,7 @@ func (repo *KubernetesRepository) GetPodsByNodeAndNamespace(node string, namespa
 		Name         string
 	}
 
-	//list all pods
+	//call driven adapter responsible for getting pods from the kubernetes cluster
 	pods, err := repo.Clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
 
 	//verify if there is an error and then what kind of error it is
