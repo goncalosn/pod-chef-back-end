@@ -1,39 +1,32 @@
 package http
 
 import (
-	deployments "pod-chef-back-end/handlers/deployments"
-	nodes "pod-chef-back-end/handlers/nodes"
-	pods "pod-chef-back-end/handlers/pods"
-	services "pod-chef-back-end/handlers/services"
 	ports "pod-chef-back-end/internal/core/ports"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 )
 
-func PodHandler(e *echo.Echo, service ports.PodServices) {
-	podsHandler := pods.NewHTTPHandler(service)
-
-	e.GET("/pods", podsHandler.GetPodsByNodeAndNamespace)
+type HTTPHandler struct {
+	KubernetesServices ports.KubernetesServices
 }
 
-func NodeHandler(e *echo.Echo, service ports.NodeServices) {
-	nodesHandler := nodes.NewHTTPHandler(service)
-
-	e.GET("/nodes", nodesHandler.GetNodes)
-	e.GET("/node", nodesHandler.GetNode)
+func NewHTTPHandler(kubernetesServices ports.KubernetesServices) *HTTPHandler {
+	return &HTTPHandler{
+		KubernetesServices: kubernetesServices,
+	}
 }
 
-func DeploymentHandler(e *echo.Echo, service ports.DeploymentServices) {
-	deploymentsHandler := deployments.NewHTTPHandler(service)
-
-	e.GET("/deployments", deploymentsHandler.GetDeployments)
-	e.DELETE("/deployment/:id", deploymentsHandler.DeleteDeployment)
-	e.POST("/deployment", deploymentsHandler.CreateDeployment)
+func NodesHandler(e *echo.Echo, service *HTTPHandler) {
+	e.GET("/nodes", service.GetNodes)
+	e.GET("/node", service.GetNode)
 }
 
-func ServiceHandler(e *echo.Echo, service ports.ServiceServices) {
-	servicesHandler := services.NewHTTPHandler(service)
+func DeploymentsHandler(e *echo.Echo, service *HTTPHandler) {
+	e.GET("/deployments", service.GetDeploymentsByNamespace)
+	e.DELETE("/deployment/:id", service.DeleteDeployment)
+	e.POST("/deployment", service.CreateDeployment)
+}
 
-	e.GET("/services", servicesHandler.GetServicesByNamespace)
-	e.GET("/service", servicesHandler.GetServiceByNameAndNamespace)
+func NamespacesHandler(e *echo.Echo, service *HTTPHandler) {
+	e.GET("/namespaces", service.GetNamespaces)
 }
