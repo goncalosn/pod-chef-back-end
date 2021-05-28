@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"pod-chef-back-end/pkg/auth"
+	"pod-chef-back-end/pkg/jwt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -33,7 +34,7 @@ func (serviceHandler *MongoClient) Register(username string, email string, rawPa
 	return res, nil
 }
 
-func (serviceHandler *MongoClient) Authenticate(email string, rawPassword string) (interface{}, error) {
+func (serviceHandler *MongoClient) Authenticate(email string, rawPassword string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -43,14 +44,19 @@ func (serviceHandler *MongoClient) Authenticate(email string, rawPassword string
 		if err == mongo.ErrNoDocuments {
 			fmt.Println("no email in db")
 		}
-		return nil, err
+		return "", err
 	}
 	token, _ := base64.StdEncoding.DecodeString(user.Token)
 	crypt, _ := base64.StdEncoding.DecodeString(user.Password)
 	decrypt := auth.DecryptPassword(crypt, token)
 	if decrypt != rawPassword {
-		return nil, errors.New("wrong password")
+		return "", errors.New("wrong password")
 	}
 
-	return user, nil
+	jwtoken, err := jwt.CreateToken(user.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return jwtoken, nil
 }

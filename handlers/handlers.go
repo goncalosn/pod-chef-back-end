@@ -1,6 +1,9 @@
 package http
 
 import (
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo/v4/middleware"
+	"net/http"
 	auths "pod-chef-back-end/handlers/auths"
 	deployments "pod-chef-back-end/handlers/deployments"
 	namespaces "pod-chef-back-end/handlers/namespaces"
@@ -12,6 +15,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 )
+
+var isLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
+	SigningKey: []byte("super_secret"),
+})
 
 func PodHandler(e *echo.Echo, service ports.PodServices) {
 	podsHandler := pods.NewHTTPHandler(service)
@@ -59,4 +66,13 @@ func AuthHandler(e *echo.Echo, service ports.UserServices) {
 
 	e.POST("/login", authsHandler.Login)
 	e.POST("/signin", authsHandler.SignIn)
+	e.GET("/private", private, isLoggedIn)
+}
+
+// TODO remove this, test purpose only
+func private(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["user_id"].(string)
+	return c.String(http.StatusOK, "Welcome "+name+"!")
 }

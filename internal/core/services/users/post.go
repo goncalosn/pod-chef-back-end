@@ -8,10 +8,10 @@ func (srv *Service) Register(username string, email string, password string) (in
 	return res, nil
 }
 
-func (srv *Service) Authenticate(email string, password string) (interface{}, error) {
+func (srv *Service) Authenticate(email string, password string) (string, error) {
 	res, err := srv.mongoRepository.Authenticate(email, password)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	return res, nil
 }

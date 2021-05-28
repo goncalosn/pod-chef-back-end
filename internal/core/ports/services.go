@@ -36,5 +36,5 @@ type VolumeServices interface {
 
 type UserServices interface {
 	Register(username string, email string, password string) (interface{}, error)
-	Authenticate(email string, password string) (interface{}, error)
+	Authenticate(email string, password string) (string, error)
 }

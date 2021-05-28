@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
+	"os"
 )
 
 type User struct {
@@ -16,10 +17,6 @@ type User struct {
 	Token    string `json:"token" bson:"token"`
 }
 
-var (
-	key = []byte("passphrasewhichneedstobe32bytes!")
-)
-
 func GenerateTokenHash() []byte {
 	token := make([]byte, aes.BlockSize)
 	if _, err := rand.Read(token); err != nil {
@@ -29,6 +26,8 @@ func GenerateTokenHash() []byte {
 }
 
 func EncryptPassword(rawPassword string, iv []byte) []byte {
+	// os.Setenv("CYPHER_KEY", "passphrasewhichneedstobe32bytes!")
+	key := []byte(os.Getenv("CYPHER_KEY"))
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("key error1", err)
@@ -44,6 +43,8 @@ func EncryptPassword(rawPassword string, iv []byte) []byte {
 }
 
 func DecryptPassword(password []byte, iv []byte) string {
+	// os.Setenv("CYPHER_KEY", "passphrasewhichneedstobe32bytes!")
+	key := []byte(os.Getenv("CYPHER_KEY"))
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("key error1", err)

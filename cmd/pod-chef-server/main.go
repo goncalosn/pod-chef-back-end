@@ -1,18 +1,22 @@
 package main
 
 import (
-	"net/http"
-
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
+	"log"
+	"net/http"
 	handlers "pod-chef-back-end/handlers"
-	services "pod-chef-back-end/internal/core/services"
+	"pod-chef-back-end/internal/core/services"
 	k8Repository "pod-chef-back-end/repositories/kubernetes"
 	mongoRepository "pod-chef-back-end/repositories/mongodb"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	e := echo.New()
 
 	// Middleware
