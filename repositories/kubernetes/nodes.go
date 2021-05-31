@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	v1 "k8s.io/api/core/v1"
@@ -31,10 +31,10 @@ func (repo *KubernetesRepository) GetNodeByName(name string) (interface{}, error
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//node not found
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "Node not found"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Node not found"}
 	} else if err != nil {
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var conditions []interface{}
@@ -86,10 +86,10 @@ func (repo *KubernetesRepository) GetNodes() (interface{}, error) {
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//no nodes found
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No nodes found"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No nodes found"}
 	} else if err != nil {
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*Node

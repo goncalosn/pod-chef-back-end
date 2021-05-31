@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	apiv1 "k8s.io/api/core/v1"
@@ -29,7 +29,7 @@ func (repo *KubernetesRepository) GetServicesByNamespace(namespace string) (inte
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*KubernetesService
@@ -71,7 +71,7 @@ func (repo *KubernetesRepository) GetServiceByNameAndNamespace(name string, name
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response *KubernetesService
@@ -136,7 +136,7 @@ func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name 
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return serviceClient, nil

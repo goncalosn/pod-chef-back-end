@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -21,7 +21,7 @@ func (ingressHandler *KubernetesRepository) GetIngressByNameAndNamespace(name st
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return response, nil
@@ -76,7 +76,7 @@ func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return ingress, nil

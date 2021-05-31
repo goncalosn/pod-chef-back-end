@@ -5,7 +5,7 @@ import (
 )
 
 //GetDeploymentsByUser service responsible for getting all deployments inside a namespace
-func (srv *Service) GetDeploymentsByUser(token string) (interface{}, error) {
+func (srv *Service) GetDeploymentsByUser(email string) (interface{}, error) {
 	//TODO: get user namespace
 	//TODO: for each all namespaces from the data base
 
@@ -21,7 +21,7 @@ func (srv *Service) GetDeploymentsByUser(token string) (interface{}, error) {
 }
 
 //GetDeploymentByUserAndName service responsible for getting a deployment inside a user's namespace
-func (srv *Service) GetDeploymentByUserAndName(token string, name string) (interface{}, error) {
+func (srv *Service) GetDeploymentByUserAndName(email string, name string) (interface{}, error) {
 	//TODO: get user namespace
 
 	//call driven adapter responsible for getting a deployment from the kubernetes cluster
@@ -36,7 +36,7 @@ func (srv *Service) GetDeploymentByUserAndName(token string, name string) (inter
 }
 
 //CreateDeployment service responsible for creating a deployment inside a new namespace
-func (srv *Service) CreateDeployment(token string, replicas *int32, image string) (interface{}, error) {
+func (srv *Service) CreateDeployment(email string, replicas *int32, image string) (interface{}, error) {
 
 	appUUID := uuid.NewV4().String() //generate uuid for this deployment
 

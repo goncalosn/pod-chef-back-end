@@ -1,22 +1,28 @@
-package http
+package kubernetes
 
 import (
 	"net/http"
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
-//GetDeploymentsByUser get all deployments inside a namespace
-func (h *HTTPHandler) GetDeploymentsByUser(c echo.Context) error {
+//getDeploymentsByUser get all deployments inside a namespace
+func (h *HTTPHandler) getDeploymentsByUser(c echo.Context) error {
+	//get the token's claims
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	email := claims["email"].(string)
+
 	//call driver adapter responsible for getting the deployments from the kubernetes cluster
-	response, err := h.kubernetesServices.GetDeploymentsByUser(c.Request().Header.Get("Token"))
+	response, err := h.kubernetesServices.GetDeploymentsByUser(email)
 
 	if err != nil {
 		//type assertion of custom Error to default error
-		kubernetesError := err.(*httpError.Error)
+		kubernetesError := err.(*pkg.Error)
 
 		//return the error sent by the service
 		return c.JSON(kubernetesError.Code, kubernetesError)
@@ -25,8 +31,8 @@ func (h *HTTPHandler) GetDeploymentsByUser(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-//GetDeploymentsByUserAndName get all deployments inside a namespace
-func (h *HTTPHandler) GetDeploymentsByUserAndName(c echo.Context) error {
+//getDeploymentsByUserAndName get all deployments inside a namespace
+func (h *HTTPHandler) getDeploymentsByUserAndName(c echo.Context) error {
 	//geting query data
 	name := c.QueryParam("name")
 
@@ -40,7 +46,7 @@ func (h *HTTPHandler) GetDeploymentsByUserAndName(c echo.Context) error {
 
 	if err != nil {
 		//type assertion of custom Error to default error
-		kubernetesError := err.(*httpError.Error)
+		kubernetesError := err.(*pkg.Error)
 
 		//return the error sent by the service
 		return c.JSON(kubernetesError.Code, kubernetesError)
@@ -49,8 +55,8 @@ func (h *HTTPHandler) GetDeploymentsByUserAndName(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-//CreateDeployment create a deployment with the given image and replicas
-func (h *HTTPHandler) CreateDeployment(c echo.Context) error {
+//createDeployment create a deployment with the given image and replicas
+func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	//geting form data
 	replicas := c.FormValue("replicas")
 	image := c.FormValue("image")
@@ -77,7 +83,7 @@ func (h *HTTPHandler) CreateDeployment(c echo.Context) error {
 	response, err := h.kubernetesServices.CreateDeployment(c.Request().Header.Get("Token"), &replicasI32, image)
 	if err != nil {
 		//type assertion of custom Error to default error
-		kubernetesError := err.(*httpError.Error)
+		kubernetesError := err.(*pkg.Error)
 
 		//return the error sent by the service
 		return c.JSON(kubernetesError.Code, kubernetesError)

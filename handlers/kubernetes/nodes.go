@@ -1,14 +1,14 @@
-package http
+package kubernetes
 
 import (
 	"net/http"
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/echo/v4"
 )
 
-//GetNodeByName get node by name from the kubenretes cluster
-func (h *HTTPHandler) GetNodeByName(c echo.Context) error {
+//getNodeByName get node by name from the kubenretes cluster
+func (h *HTTPHandler) getNodeByName(c echo.Context) error {
 	//geting query data
 	node := c.QueryParam("node")
 
@@ -22,7 +22,7 @@ func (h *HTTPHandler) GetNodeByName(c echo.Context) error {
 
 	if err != nil {
 		//type assertion of custom Error to default error
-		kubernetesError := err.(*httpError.Error)
+		kubernetesError := err.(*pkg.Error)
 
 		//return the error sent by the service
 		return c.JSON(kubernetesError.Code, kubernetesError)
@@ -31,14 +31,14 @@ func (h *HTTPHandler) GetNodeByName(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-//GetNodes get nodes from  kubernetes cluster
-func (h *HTTPHandler) GetNodes(c echo.Context) error {
+//getNodes get nodes from  kubernetes cluster
+func (h *HTTPHandler) getNodes(c echo.Context) error {
 	//call driver adapter responsible for getting the nodes from the kubernetes cluster
 	response, err := h.kubernetesServices.GetNodes()
 
 	if err != nil {
 		//type assertion of custom Error to default error
-		kubernetesError := err.(*httpError.Error)
+		kubernetesError := err.(*pkg.Error)
 
 		//return the error sent by the service
 		return c.JSON(kubernetesError.Code, kubernetesError)

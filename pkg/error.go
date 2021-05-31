@@ -1,6 +1,8 @@
-package errors
+package pkg
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Error defines a standard application error.
 type Error struct {
@@ -8,7 +10,7 @@ type Error struct {
 	Code int `json:"-"`
 
 	// Human-readable message.
-	Message string `json:"Message"`
+	Message string `json:"message"`
 
 	// Logical operation and nested error.
 	Op  string `json:"-"`
@@ -19,7 +21,7 @@ func (err *Error) Error() string {
 	return err.Err.Error()
 }
 
-// ErrorCode returns the code of the root error, if available. Otherwise returns EINTERNAL.
+// ErrorCode returns the code of the root error, if available.
 func ErrorCode(err error) int {
 	if err == nil {
 		return http.StatusOK

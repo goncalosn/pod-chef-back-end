@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	v1 "k8s.io/api/core/v1"
@@ -28,10 +28,10 @@ func (repo *KubernetesRepository) GetPodsByNodeAndNamespace(node string, namespa
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//no pods found
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusNotFound, Message: "No pods found"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No pods found"}
 	} else if err != nil {
 		log.Error(err)
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	var response []*KubernetesRepository

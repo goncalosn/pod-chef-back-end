@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	httpError "pod-chef-back-end/pkg/errors"
+	pkg "pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	appsv1 "k8s.io/api/apps/v1"
@@ -30,7 +30,7 @@ func (repo *KubernetesRepository) GetDeploymentByNameAndNamespace(name string, n
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return response, nil
@@ -86,7 +86,7 @@ func (repo *KubernetesRepository) CreateDeployment(namespace string, name string
 		log.Error(err)
 
 		//return a custom error
-		return nil, &httpError.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	return res.Name, nil
