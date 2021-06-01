@@ -29,6 +29,4 @@ func Handlers(e *echo.Echo, service *HTTPHandler, isLoggedIn echo.MiddlewareFunc
 	e.GET("/deployments", service.getDeploymentsByUserAndName, isLoggedIn)
 	e.GET("/deployment", service.getDeploymentsByUser, isLoggedIn)
 	e.POST("/deployment", service.createDeployment, isLoggedIn)
-
-	e.GET("/namespaces", service.getNamespaces, isLoggedIn)
 }
