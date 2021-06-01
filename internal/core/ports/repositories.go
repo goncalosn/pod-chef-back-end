@@ -1,40 +1,40 @@
 package ports
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	models "pod-chef-back-end/internal/core/domain/mongo"
 )
 
-type Node interface {
-	GetNode(name string) (interface{}, error)
+//KubernetesRepository interface holding all the kubernetes respository methods
+type KubernetesRepository interface {
+	GetNodeByName(name string) (interface{}, error)
 	GetNodes() (interface{}, error)
-}
 
-type Pod interface {
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
-}
 
-type Deployment interface {
-	CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error)
-	CreateFileDeployment(dep *appsv1.Deployment) (interface{}, error)
-	GetDeployments() (interface{}, error)
-	CheckRepeatedDeployName(name string, namespace string) (bool, error)
-	DeleteDeployment(name string) (interface{}, error)
-}
+	CreateDeployment(namespaceUUID string, name string, replicas *int32, image string) (interface{}, error)
+	GetDeploymentByNameAndNamespace(name string, namespace string) (interface{}, error)
 
-type Namespace interface {
-	GetNamespaces() ([]string, error)
-}
+	CreateNamespace(name string) (interface{}, error)
+	DeleteNamespace(name string) (interface{}, error)
 
-// Service stands for kubernetes service
-type Service interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateService(serv *v1.Service) (interface{}, error)
+	CreateClusterIPService(namespace string, name string) (interface{}, error)
+
+	GetIngressByNameAndNamespace(name string, namespace string) (interface{}, error)
+	CreateIngress(namespace string, name string, host string) (interface{}, error)
 }
 
-type Volume interface {
-	GetVolumes() (interface{}, error)
+//MongoRepository interface holding all the mongo respository methods
+type MongoRepository interface {
+	GetDeploymentByName(name string) (interface{}, error)
+	GetAllDeploymentsByUser(userEmail string) (interface{}, error)
+	InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error)
+	DeleteDeploymentByName(name string) (interface{}, error)
+
+	GetUserByEmail(email string) (*models.User, error)
+	InsertUser(email string, hash [32]byte, name string, role string) (*models.User, error)
+	DeleteUserByEmail(email string) (interface{}, error)
 }
 
 type UserAuth interface {

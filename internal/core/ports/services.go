@@ -1,37 +1,36 @@
 package ports
 
 import (
-	"mime/multipart"
+	models "pod-chef-back-end/internal/core/domain/mongo"
 )
 
-type NodeServices interface {
-	GetNode(name string) (interface{}, error)
+//KubernetesServices interface holding all the kubernetes services
+type KubernetesServices interface {
+	GetNodeByName(name string) (interface{}, error)
 	GetNodes() (interface{}, error)
-}
 
-type PodServices interface {
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
-}
 
-type DeploymentServices interface {
-	CreateDefaultDeployment(name string, replicas *int32, image string) (interface{}, error)
-	CreateFileDeployment(*multipart.FileHeader) (interface{}, error)
-	GetDeployments() (interface{}, error)
-	DeleteDeployment(name string) (interface{}, error)
-}
+	CreateDeployment(email string, replicas *int32, image string) (interface{}, error)
+	GetDeploymentsByUser(email string) (interface{}, error)
+	GetDeploymentByUserAndName(email string, name string) (interface{}, error)
 
-type NamespaceServices interface {
-	GetNamespaces() (interface{}, error)
-}
+	CreateNamespace(name string) (interface{}, error)
+	DeleteNamespace(name string) (interface{}, error)
 
-// ServiceServices stands for kubernetes service
-type ServiceServices interface {
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
+	CreateClusterIPService(namespace string, name string) (interface{}, error)
+
+	GetIngressByName(name string, namespace string) (interface{}, error)
+	CreateIngress(namespace string, name string, host string) (interface{}, error)
 }
 
-type VolumeServices interface {
-	GetVolumes() (interface{}, error)
+//MongoServices interface holding all the mongo services
+type MongoServices interface {
+	GetUserByEmail(email string) (*models.User, error)
+	InsertUser(email string, password string, name string, role string) (*models.User, error)
+	DeleteUser(name string) (interface{}, error)
 }
 
 type UserServices interface {
