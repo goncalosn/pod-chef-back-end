@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	models "pod-chef-back-end/internal/core/domain/mongo"
-	pkg "pod-chef-back-end/pkg"
+	"pod-chef-back-end/pkg"
 
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,13 +38,14 @@ func (repo *MongoRepository) GetUserByEmail(email string) (*models.User, error) 
 }
 
 //InsertUser method responsible for inserting a user in the database
-func (repo *MongoRepository) InsertUser(email string, hash [32]byte, name string, role string) (*models.User, error) {
+func (repo *MongoRepository) InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error) {
 	//data structure containing the data to be inserted
 	user := &models.User{
-		Email: email,
-		Hash:  hash,
-		Name:  name,
-		Role:  role,
+		Email:    email,
+		Password: hash,
+		TokenIv:  tokenIv,
+		Name:     name,
+		Role:     role,
 	}
 
 	//choose the database and collection

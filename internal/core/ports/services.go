@@ -29,7 +29,7 @@ type KubernetesServices interface {
 //MongoServices interface holding all the mongo services
 type MongoServices interface {
 	GetUserByEmail(email string) (*models.User, error)
-	InsertUser(email string, password string, name string, role string) (*models.User, error)
+	InsertUser(email string, password string, tokenIv string, name string, role string) (*models.User, error)
 	DeleteUser(name string) (interface{}, error)
 }
 

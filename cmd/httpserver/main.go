@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/labstack/gommon/log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -17,9 +18,12 @@ import (
 
 func main() {
 	//setup env file
-	viper.SetConfigFile("../../.env")
+	viper.SetConfigFile("./.env")
 	//read env file
-	viper.ReadInConfig()
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	e := echo.New()
 

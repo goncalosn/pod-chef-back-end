@@ -33,7 +33,7 @@ type MongoRepository interface {
 	DeleteDeploymentByName(name string) (interface{}, error)
 
 	GetUserByEmail(email string) (*models.User, error)
-	InsertUser(email string, hash [32]byte, name string, role string) (*models.User, error)
+	InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
 }
 

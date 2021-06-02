@@ -1,6 +1,11 @@
 package pkg
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,15 +15,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-//GenerateToken service responsible for generating a token
-func GenerateToken(viper *viper.Viper, name string, email string, role string) (interface{}, error) {
+//GenerateJWT service responsible for generating a token
+func GenerateJWT(viper *viper.Viper, name string, email string, role string) (interface{}, error) {
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
 	claims["name"] = name
-	claims["email"] = name
+	claims["email"] = email
 	claims["role"] = role
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
@@ -47,4 +52,33 @@ func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return next(c)
 	}
+}
+
+func GenerateTokenIV() []byte {
+	token := make([]byte, aes.BlockSize)
+	if _, err := rand.Read(token); err != nil {
+		log.Fatal(err)
+	}
+	return token
+}
+
+func EncryptPassword(rawPassword string, iv []byte, key []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Println("key error1", err)
+	}
+
+	ecb := cipher.NewCBCEncrypter(block, iv)
+	content := []byte(rawPassword)
+	content = PKCS5Padding(content)
+	crypted := make([]byte, len(content))
+	ecb.CryptBlocks(crypted, content)
+
+	return crypted
+}
+
+func PKCS5Padding(ciphertext []byte) []byte {
+	padding := aes.BlockSize - len(ciphertext)%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padtext...)
 }

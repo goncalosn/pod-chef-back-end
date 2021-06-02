@@ -1,7 +1,6 @@
 package mongo
 
 import (
-	"crypto/sha256"
 	"net/http"
 	models "pod-chef-back-end/internal/core/domain/mongo"
 	"pod-chef-back-end/pkg"
@@ -25,7 +24,7 @@ func (srv *Service) GetUserByEmail(email string) (*models.User, error) {
 }
 
 //InsertUser service responsible for inserting a user into the database
-func (srv *Service) InsertUser(email string, password string, name string, role string) (*models.User, error) {
+func (srv *Service) InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error) {
 	//check if the email already exists
 	response, err := srv.mongoRepository.GetUserByEmail(email)
 
@@ -37,11 +36,8 @@ func (srv *Service) InsertUser(email string, password string, name string, role 
 	var insertResponse *models.User
 
 	if response == nil { //email is not being used
-		//hash password
-		hash := sha256.Sum256([]byte(password))
-
 		//call driven adapter responsible for inserting a user inside the database
-		insertResponse, err = srv.mongoRepository.InsertUser(email, hash, name, role)
+		insertResponse, err = srv.mongoRepository.InsertUser(email, hash, tokenIv, name, role)
 
 		if err != nil {
 			//return the error sent by the repository
