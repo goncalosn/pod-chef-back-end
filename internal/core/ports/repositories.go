@@ -36,8 +36,3 @@ type MongoRepository interface {
 	InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
 }
-
-type UserAuth interface {
-	Register(username string, email string, password string) (interface{}, error)
-	Authenticate(email string, password string) (string, error)
-}

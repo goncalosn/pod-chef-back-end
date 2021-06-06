@@ -32,8 +32,3 @@ type MongoServices interface {
 	InsertUser(email string, password string, tokenIv string, name string, role string) (*models.User, error)
 	DeleteUser(name string) (interface{}, error)
 }
-
-type UserServices interface {
-	Register(username string, email string, password string) (interface{}, error)
-	Authenticate(email string, password string) (string, error)
-}
