@@ -38,12 +38,11 @@ func (repo *MongoRepository) GetUserByEmail(email string) (*models.User, error) 
 }
 
 //InsertUser method responsible for inserting a user in the database
-func (repo *MongoRepository) InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error) {
+func (repo *MongoRepository) InsertUser(email string, hash string, name string, role string) (*models.User, error) {
 	//data structure containing the data to be inserted
 	user := &models.User{
 		Email:    email,
 		Password: hash,
-		TokenIv:  tokenIv,
 		Name:     name,
 		Role:     role,
 	}
