@@ -1,4 +1,4 @@
-Hi {{.ReceiverName}},
+Hi,
 You are now in the whitelist of the Pod Chef project and can register <here>.
 
 With The best regards, {{.SenderName}}.

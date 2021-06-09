@@ -1,24 +1,28 @@
 package main
 
 import (
-	"github.com/labstack/gommon/log"
 	"net/http"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 
+	emailHandlers "pod-chef-back-end/handlers/email"
 	kubernetesHandlers "pod-chef-back-end/handlers/kubernetes"
 	mongoHandlers "pod-chef-back-end/handlers/mongo"
+	emailServices "pod-chef-back-end/internal/core/services/email"
 	kubernetesServices "pod-chef-back-end/internal/core/services/kubernetes"
 	mongoServices "pod-chef-back-end/internal/core/services/mongo"
+	emailRepo "pod-chef-back-end/repositories/email"
 	kubernetesRepo "pod-chef-back-end/repositories/kubernetes"
 	mongoRepo "pod-chef-back-end/repositories/mongo"
 )
 
 func main() {
 	//setup env file
-	viper.SetConfigFile("./.env")
+	viper.SetConfigFile("../../.env")
 	//read env file
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -47,6 +51,10 @@ func main() {
 	mongoRepository := mongoRepo.NewMongoRepository(viper.GetViper())
 	mongoService := mongoServices.NewMongoService(mongoRepository)
 
+	//initalize mongo access configurations
+	emailRepository := emailRepo.NewEmailRepository(viper.GetViper())
+	emailService := emailServices.NewEmailService(emailRepository)
+
 	//initialize the kubernetes http handlers
 	kubernetesHandler := kubernetesHandlers.NewHTTPHandler(kubernetesService, mongoService)
 	kubernetesHandlers.Handlers(e, kubernetesHandler, isLoggedIn)
@@ -54,6 +62,10 @@ func main() {
 	//initialize the mongo http handlers
 	mongoHandler := mongoHandlers.NewHTTPHandler(mongoService, viper.GetViper())
 	mongoHandlers.Handlers(e, mongoHandler, isLoggedIn)
+
+	//initialize the email http handlers
+	emailHandler := emailHandlers.NewHTTPHandler(emailService, viper.GetViper())
+	emailHandlers.Handlers(e, emailHandler, isLoggedIn)
 
 	e.GET("/api", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello World!")
