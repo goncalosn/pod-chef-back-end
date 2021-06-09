@@ -28,7 +28,10 @@ func (repo *MongoRepository) GetUserByEmail(email string) (*models.User, error) 
 	//call driven adapter responsible for getting a user data from the database
 	err := collection.FindOne(context.Background(), filter).Decode(&user)
 
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
 		//print the error stack
 		log.Error(err)
 
@@ -54,6 +57,9 @@ func (repo *MongoRepository) GetAllUsers() (interface{}, error) {
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "hash": 0}})
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No user were found"}
+		}
 		//print the error stack
 		log.Error(err)
 
@@ -136,7 +142,10 @@ func (repo *MongoRepository) GetUserFromWhitelistByEmail(email string) (interfac
 	//call driven adapter responsible for getting a user data from the database
 	err := collection.FindOne(context.Background(), filter).Decode(&user)
 
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
 		//print the error stack
 		log.Error(err)
 
@@ -162,6 +171,9 @@ func (repo *MongoRepository) GetAllUsersFromWhitelist() (interface{}, error) {
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0}})
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No users were found"}
+		}
 		//print the error stack
 		log.Error(err)
 
@@ -184,7 +196,7 @@ func (repo *MongoRepository) GetAllUsersFromWhitelist() (interface{}, error) {
 }
 
 //InsertUserIntoWhitelist method responsible for inserting a user in the database
-func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (interface{}, error) {
+func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (bool, error) {
 	//data structure containing the data to be inserted
 	user := struct {
 		Email string    `bson:"email"`
@@ -204,14 +216,14 @@ func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (interface{},
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return user, nil
+	return true, nil
 }
 
 //DeleteUserFromWhitelistByEmail method responsible for deleting a user
-func (repo *MongoRepository) DeleteUserFromWhitelistByEmail(email string) (interface{}, error) {
+func (repo *MongoRepository) DeleteUserFromWhitelistByEmail(email string) (bool, error) {
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("whitelist")
 
@@ -219,15 +231,18 @@ func (repo *MongoRepository) DeleteUserFromWhitelistByEmail(email string) (inter
 	filter := bson.D{{"email", email}}
 
 	//call driven adapter responsible for deleting a user from the database
-	response, err := collection.DeleteOne(context.TODO(), filter)
+	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return response, nil
+	return true, nil
 }

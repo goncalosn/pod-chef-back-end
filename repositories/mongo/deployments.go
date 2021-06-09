@@ -27,12 +27,17 @@ func (repo *MongoRepository) GetDeploymentByUUID(uuid string) (*models.Deploymen
 
 	//call driven adapter responsible for getting a user data from the database
 	err := collection.FindOne(context.Background(), filter, &options.FindOneOptions{Projection: bson.M{"_id": 0}}).Decode(&deployment)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Deployment not found"}
+		}
+
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+
 	}
 
 	return &deployment, nil
@@ -53,6 +58,10 @@ func (repo *MongoRepository) GetAllDeploymentsByUser(user string) (*[]bson.M, er
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "user": 0}})
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No deployments were found"}
+		}
+
 		//print the error stack
 		log.Error(err)
 
@@ -75,7 +84,7 @@ func (repo *MongoRepository) GetAllDeploymentsByUser(user string) (*[]bson.M, er
 }
 
 //InsertDeployment method responsible for inserting a deployment in the database
-func (repo *MongoRepository) InsertDeployment(uuid string, user string, image string) (interface{}, error) {
+func (repo *MongoRepository) InsertDeployment(uuid string, user string, image string) (bool, error) {
 	//data structure containing the data to be inserted
 	deployment := &models.Deployment{
 		UUID:      uuid,
@@ -88,16 +97,16 @@ func (repo *MongoRepository) InsertDeployment(uuid string, user string, image st
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//call driven adapter responsible for inserting a user into the database
-	response, err := collection.InsertOne(context.Background(), deployment)
+	_, err := collection.InsertOne(context.Background(), deployment)
 	if err != nil {
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return response, nil
+	return true, nil
 }
 
 //DeleteDeploymentByUUID method responsible for deleting a deployment
@@ -112,6 +121,9 @@ func (repo *MongoRepository) DeleteDeploymentByUUID(uuid string) (bool, error) {
 	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Deployment not found"}
+		}
 		//print the error stack
 		log.Error(err)
 

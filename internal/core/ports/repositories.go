@@ -38,12 +38,12 @@ type MongoRepository interface {
 
 	GetUserFromWhitelistByEmail(email string) (interface{}, error)
 	GetAllUsersFromWhitelist() (interface{}, error)
-	InsertUserIntoWhitelist(email string) (interface{}, error)
-	DeleteUserFromWhitelistByEmail(email string) (interface{}, error)
+	InsertUserIntoWhitelist(email string) (bool, error)
+	DeleteUserFromWhitelistByEmail(email string) (bool, error)
 
 	GetDeploymentByUUID(uuid string) (*models.Deployment, error)
 	GetAllDeploymentsByUser(user string) (*[]bson.M, error)
-	InsertDeployment(uuid string, user string, image string) (interface{}, error)
+	InsertDeployment(uuid string, user string, image string) (bool, error)
 	DeleteDeploymentByUUID(uuid string) (bool, error)
 }
 
