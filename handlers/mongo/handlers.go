@@ -1,4 +1,4 @@
-package handlers
+package mongo
 
 import (
 	"pod-chef-back-end/internal/core/ports"

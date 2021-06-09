@@ -43,13 +43,13 @@ func main() {
 		SigningKey: []byte(viper.Get("TOKEN_SECRET").(string)),
 	})
 
-	//initalize kubernetes access configurations
-	kubernetesRepository := kubernetesRepo.NewKubernetesRepository()
-	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository)
-
 	//initalize mongo access configurations
 	mongoRepository := mongoRepo.NewMongoRepository(viper.GetViper())
 	mongoService := mongoServices.NewMongoService(mongoRepository)
+
+	//initalize kubernetes access configurations
+	kubernetesRepository := kubernetesRepo.NewKubernetesRepository()
+	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository)
 
 	//initalize email access configurations
 	emailRepository := emailRepo.NewEmailRepository(viper.GetViper())

@@ -2,7 +2,10 @@ package ports
 
 import (
 	email "pod-chef-back-end/internal/core/domain/email"
+	models "pod-chef-back-end/internal/core/domain/mongo"
 	mongo "pod-chef-back-end/internal/core/domain/mongo"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 //KubernetesRepository interface holding all the kubernetes respository methods
@@ -12,8 +15,8 @@ type KubernetesRepository interface {
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(namespaceUUID string, name string, replicas *int32, image string) (interface{}, error)
 	GetDeploymentByNameAndNamespace(name string, namespace string) (interface{}, error)
+	CreateDeployment(namespace string, name string, replicas *int32, image string) (interface{}, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
@@ -28,18 +31,20 @@ type KubernetesRepository interface {
 
 //MongoRepository interface holding all the mongo respository methods
 type MongoRepository interface {
-	GetDeploymentByName(name string) (interface{}, error)
-	GetAllDeploymentsByUser(userEmail string) (interface{}, error)
-	InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error)
-	DeleteDeploymentByName(name string) (interface{}, error)
 	GetUserByEmail(email string) (*mongo.User, error)
 	GetAllUsers() (interface{}, error)
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
+
 	GetUserFromWhitelistByEmail(email string) (interface{}, error)
 	GetAllUsersFromWhitelist() (interface{}, error)
 	InsertUserIntoWhitelist(email string) (interface{}, error)
 	DeleteUserFromWhitelistByEmail(email string) (interface{}, error)
+
+	GetDeploymentByUUID(uuid string) (*models.Deployment, error)
+	GetAllDeploymentsByUser(user string) (*[]bson.M, error)
+	InsertDeployment(uuid string, user string, image string) (interface{}, error)
+	DeleteDeploymentByUUID(uuid string) (bool, error)
 }
 
 //EmailRepository interface holding all the email respository methods

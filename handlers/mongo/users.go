@@ -1,4 +1,4 @@
-package handlers
+package mongo
 
 import (
 	"net/http"

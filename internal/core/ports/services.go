@@ -14,6 +14,7 @@ type KubernetesServices interface {
 	CreateDeployment(email string, replicas *int32, image string) (interface{}, error)
 	GetDeploymentsByUser(email string) (interface{}, error)
 	GetDeploymentByUserAndName(email string, name string) (interface{}, error)
+	DeleteDeploymentByUserAndUUID(email string, uuid string) (interface{}, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
