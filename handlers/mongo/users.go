@@ -22,7 +22,7 @@ func (h *HTTPHandler) login(c echo.Context) error {
 	}
 
 	//checking data for empty values
-	if reqUser.Email == "" || reqUser.Password == "" {
+	if reqUser.Email == "" || reqUser.Hash == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
@@ -40,7 +40,7 @@ func (h *HTTPHandler) login(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "Not found")
 	} else { //user exists, verify user's password with a hash of the one sent
 		//compare hashes
-		if !pkg.ComparePasswords(user.Password, reqUser.Password) {
+		if !pkg.ComparePasswords(user.Hash, reqUser.Hash) {
 			//wrong password
 			return c.JSON(http.StatusNotFound, "Not found")
 		}
@@ -71,11 +71,11 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	}
 
 	//checking data for empty values
-	if reqUser.Email == "" || reqUser.Password == "" || reqUser.Name == "" {
+	if reqUser.Email == "" || reqUser.Hash == "" || reqUser.Name == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
-	crypt := pkg.EncryptPassword(reqUser.Password)
+	crypt := pkg.EncryptPassword(reqUser.Hash)
 	//call driver adapter responsible for getting the user from the database
 	user, err := h.mongoServices.InsertUser(reqUser.Email, string(crypt), reqUser.Name, "user")
 
@@ -97,4 +97,36 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	}
 
 	return c.JSONPretty(http.StatusOK, token, " ")
+}
+
+//getAllUsers get all the users from the database
+func (h *HTTPHandler) getAllUsers(c echo.Context) error {
+	//call driver adapter responsible for getting all the users from the database
+	response, err := h.mongoServices.GetAllUsers()
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//getAllUsersFromWhitelist get all the users from the whitelist
+func (h *HTTPHandler) getAllUsersFromWhitelist(c echo.Context) error {
+	//call driver adapter responsible for getting all the users from the database
+	response, err := h.mongoServices.GetAllUsersFromWhitelist()
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
 }

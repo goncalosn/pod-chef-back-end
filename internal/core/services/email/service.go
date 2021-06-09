@@ -2,14 +2,16 @@ package email
 
 import "pod-chef-back-end/internal/core/ports"
 
-//Service email repository
+//Service repositories ncessary for the email methods
 type Service struct {
-	EmailRepository ports.EmailRepository
+	emailRepository ports.EmailRepository
+	mongoRepository ports.MongoRepository
 }
 
 //NewEmailService where the email repository is injected
-func NewEmailService(emailRepository ports.EmailRepository) *Service {
+func NewEmailService(emailRepository ports.EmailRepository, mongoRepository ports.MongoRepository) *Service {
 	return &Service{
-		EmailRepository: emailRepository,
+		emailRepository: emailRepository,
+		mongoRepository: mongoRepository,
 	}
 }

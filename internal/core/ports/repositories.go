@@ -33,8 +33,13 @@ type MongoRepository interface {
 	InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error)
 	DeleteDeploymentByName(name string) (interface{}, error)
 	GetUserByEmail(email string) (*mongo.User, error)
+	GetAllUsers() (interface{}, error)
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
+	GetUserFromWhitelistByEmail(email string) (interface{}, error)
+	GetAllUsersFromWhitelist() (interface{}, error)
+	InsertUserIntoWhitelist(email string) (interface{}, error)
+	DeleteUserFromWhitelistByEmail(email string) (interface{}, error)
 }
 
 //EmailRepository interface holding all the email respository methods

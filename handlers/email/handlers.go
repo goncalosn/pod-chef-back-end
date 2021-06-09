@@ -10,20 +10,20 @@ import (
 
 //HTTPHandler email services
 type HTTPHandler struct {
-	EmailServices ports.EmailServices
+	emailServices ports.EmailServices
 	viper         *viper.Viper
 }
 
 //NewHTTPHandler where services are injected
 func NewHTTPHandler(emailServices ports.EmailServices, viper *viper.Viper) *HTTPHandler {
 	return &HTTPHandler{
-		EmailServices: emailServices,
+		emailServices: emailServices,
 		viper:         viper,
 	}
 }
 
 //Handlers contains containers every handler associated with kubernetes
-func Handlers(e *echo.Echo, service *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
-	e.POST("/email/invitation", service.newInvitationEmail, isLoggedIn, pkg.IsAdmin)
-	e.POST("/email/annulment", service.newAnnulmentEmail, isLoggedIn, pkg.IsAdmin)
+func Handlers(e *echo.Echo, handler *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
+	e.POST("/email/invitation", handler.newInvitationEmail, isLoggedIn, pkg.IsAdmin)
+	e.POST("/email/annulment", handler.newAnnulmentEmail, isLoggedIn, pkg.IsAdmin)
 }

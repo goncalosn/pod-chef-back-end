@@ -41,8 +41,12 @@ func (h *HTTPHandler) getDeploymentsByUserAndName(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	email := claims["email"].(string)
+
 	//call driver adapter responsible for getting a deployment from the kubernetes cluster
-	response, err := h.kubernetesServices.GetDeploymentByUserAndName(c.Request().Header.Get("Token"), name)
+	response, err := h.kubernetesServices.GetDeploymentByUserAndName(email, name)
 
 	if err != nil {
 		//type assertion of custom Error to default error

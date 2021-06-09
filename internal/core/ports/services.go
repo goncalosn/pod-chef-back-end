@@ -29,11 +29,14 @@ type KubernetesServices interface {
 //MongoServices interface holding all the mongo services
 type MongoServices interface {
 	GetUserByEmail(email string) (*models.User, error)
+	GetAllUsers() (interface{}, error)
 	InsertUser(email string, password string, name string, role string) (*models.User, error)
 	DeleteUser(name string) (interface{}, error)
+	GetAllUsersFromWhitelist() (interface{}, error)
 }
 
 //EmailServices interface holding all the email services
 type EmailServices interface {
-	SendEmail(to string, subject string, template string) (interface{}, error)
+	SendAnnulmentEmail(to string, subject string, template string) (interface{}, error)
+	SendInvitationEmail(to string, subject string, template string) (interface{}, error)
 }

@@ -1,9 +1,10 @@
 package pkg
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -21,7 +22,7 @@ func GenerateJWT(viper *viper.Viper, name string, email string, role string) (in
 	claims["name"] = name
 	claims["email"] = email
 	claims["role"] = role
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
 
 	secret := viper.Get("TOKEN_SECRET").(string)
 

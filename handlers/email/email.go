@@ -20,7 +20,7 @@ func (h *HTTPHandler) newInvitationEmail(c echo.Context) error {
 	var subject = "You have been added to the Pod Chef whitelist!"
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.EmailServices.SendEmail(receiver, subject, "invitation.txt")
+	response, err := h.emailServices.SendInvitationEmail(receiver, subject, "invitation.txt")
 	if err != nil {
 		//type assertion of custom Error to default error
 		emailError := err.(*pkg.Error)
@@ -45,7 +45,7 @@ func (h *HTTPHandler) newAnnulmentEmail(c echo.Context) error {
 	var subject = "You have been removed from the Pod Chef whitelist!"
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.EmailServices.SendEmail(receiver, subject, "annulment.txt")
+	response, err := h.emailServices.SendAnnulmentEmail(receiver, subject, "annulment.txt")
 	if err != nil {
 		//type assertion of custom Error to default error
 		emailError := err.(*pkg.Error)

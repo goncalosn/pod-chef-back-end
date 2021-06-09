@@ -23,6 +23,19 @@ func (srv *Service) GetUserByEmail(email string) (*models.User, error) {
 	return response, nil
 }
 
+//GetAllUsers service responsible for getting all users from the database
+func (srv *Service) GetAllUsers() (interface{}, error) {
+	//call driven adapter responsible for getting a deployment from mongo database
+	response, err := srv.mongoRepository.GetAllUsers()
+
+	if err != nil {
+		//return the error sent by the repository
+		return nil, err
+	}
+
+	return response, nil
+}
+
 //InsertUser service responsible for inserting a user into the database
 func (srv *Service) InsertUser(email string, hash string, name string, role string) (*models.User, error) {
 	//check if the email already exists
@@ -38,6 +51,14 @@ func (srv *Service) InsertUser(email string, hash string, name string, role stri
 	if response == nil { //email is not being used
 		//call driven adapter responsible for inserting a user inside the database
 		insertResponse, err = srv.mongoRepository.InsertUser(email, hash, name, role)
+
+		if err != nil {
+			//return the error sent by the repository
+			return nil, err
+		}
+
+		//delete user invitation
+		_, err := srv.mongoRepository.DeleteUserFromWhitelistByEmail(email)
 
 		if err != nil {
 			//return the error sent by the repository
@@ -62,10 +83,24 @@ func (srv *Service) DeleteUser(email string) (interface{}, error) {
 	//call driven adapter responsible for inserting a user inside the database
 	responseDelete, err := srv.mongoRepository.DeleteUserByEmail(email)
 
+	//TODO: DELETE EVERY USER'S NAMESPACE
 	if err != nil {
 		//return the error sent by the repository
 		return nil, err
 	}
 
 	return responseDelete, nil
+}
+
+//GetAllUsersFromWhitelist service responsible for getting all users from the whitelist
+func (srv *Service) GetAllUsersFromWhitelist() (interface{}, error) {
+	//call driven adapter responsible for getting a deployment from mongo database
+	response, err := srv.mongoRepository.GetAllUsersFromWhitelist()
+
+	if err != nil {
+		//return the error sent by the repository
+		return nil, err
+	}
+
+	return response, nil
 }
