@@ -32,3 +32,8 @@ type MongoServices interface {
 	InsertUser(email string, password string, name string, role string) (*models.User, error)
 	DeleteUser(name string) (interface{}, error)
 }
+
+//EmailServices interface holding all the email services
+type EmailServices interface {
+	SendEmail(to string, subject string, template string) (interface{}, error)
+}

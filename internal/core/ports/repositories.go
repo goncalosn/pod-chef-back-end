@@ -1,7 +1,8 @@
 package ports
 
 import (
-	models "pod-chef-back-end/internal/core/domain/mongo"
+	email "pod-chef-back-end/internal/core/domain/email"
+	mongo "pod-chef-back-end/internal/core/domain/mongo"
 )
 
 //KubernetesRepository interface holding all the kubernetes respository methods
@@ -31,8 +32,12 @@ type MongoRepository interface {
 	GetAllDeploymentsByUser(userEmail string) (interface{}, error)
 	InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error)
 	DeleteDeploymentByName(name string) (interface{}, error)
-
 	GetUserByEmail(email string) (*models.User, error)
 	InsertUser(email string, hash string, name string, role string) (*models.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
+}
+
+//EmailRepository interface holding all the email respository methods
+type EmailRepository interface {
+	SendEmailSMTP(to string, data *email.Email, template string) (bool, error)
 }
