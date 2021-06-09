@@ -32,8 +32,8 @@ type MongoRepository interface {
 	GetAllDeploymentsByUser(userEmail string) (interface{}, error)
 	InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error)
 	DeleteDeploymentByName(name string) (interface{}, error)
-	GetUserByEmail(email string) (*models.User, error)
-	InsertUser(email string, hash string, name string, role string) (*models.User, error)
+	GetUserByEmail(email string) (*mongo.User, error)
+	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
 	DeleteUserByEmail(email string) (interface{}, error)
 }
 
