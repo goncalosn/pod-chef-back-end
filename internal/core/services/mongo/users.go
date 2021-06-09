@@ -24,7 +24,7 @@ func (srv *Service) GetUserByEmail(email string) (*models.User, error) {
 }
 
 //InsertUser service responsible for inserting a user into the database
-func (srv *Service) InsertUser(email string, hash string, tokenIv string, name string, role string) (*models.User, error) {
+func (srv *Service) InsertUser(email string, hash string, name string, role string) (*models.User, error) {
 	//check if the email already exists
 	response, err := srv.mongoRepository.GetUserByEmail(email)
 
@@ -37,7 +37,7 @@ func (srv *Service) InsertUser(email string, hash string, tokenIv string, name s
 
 	if response == nil { //email is not being used
 		//call driven adapter responsible for inserting a user inside the database
-		insertResponse, err = srv.mongoRepository.InsertUser(email, hash, tokenIv, name, role)
+		insertResponse, err = srv.mongoRepository.InsertUser(email, hash, name, role)
 
 		if err != nil {
 			//return the error sent by the repository
