@@ -43,9 +43,9 @@ func (repo *MongoRepository) GetUserByEmail(email string) (*models.User, error) 
 }
 
 //GetAllUsers method responsible for all users
-func (repo *MongoRepository) GetAllUsers() (interface{}, error) {
+func (repo *MongoRepository) GetAllUsers() (*[]models.User, error) {
 	//data structure to where the data will be written to
-	var users []bson.M
+	var users []models.User
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
@@ -58,7 +58,7 @@ func (repo *MongoRepository) GetAllUsers() (interface{}, error) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No user were found"}
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No user were found"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -77,7 +77,7 @@ func (repo *MongoRepository) GetAllUsers() (interface{}, error) {
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return users, nil
+	return &users, nil
 }
 
 //InsertUser method responsible for inserting a user in the database
@@ -107,7 +107,7 @@ func (repo *MongoRepository) InsertUser(email string, hash string, name string, 
 }
 
 //DeleteUserByEmail method responsible for deleting a user
-func (repo *MongoRepository) DeleteUserByEmail(email string) (interface{}, error) {
+func (repo *MongoRepository) DeleteUserByEmail(email string) (bool, error) {
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
 
@@ -115,17 +115,17 @@ func (repo *MongoRepository) DeleteUserByEmail(email string) (interface{}, error
 	filter := bson.D{{"email", email}}
 
 	//call driven adapter responsible for deleting a user from the database
-	response, err := collection.DeleteOne(context.TODO(), filter)
+	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return response, nil
+	return true, nil
 }
 
 //GetUserFromWhitelistByEmail method responsible for getting a user from the database
@@ -144,7 +144,7 @@ func (repo *MongoRepository) GetUserFromWhitelistByEmail(email string) (interfac
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -157,9 +157,9 @@ func (repo *MongoRepository) GetUserFromWhitelistByEmail(email string) (interfac
 }
 
 //GetAllUsersFromWhitelist method responsible for all users fro mthe whitelist
-func (repo *MongoRepository) GetAllUsersFromWhitelist() (interface{}, error) {
+func (repo *MongoRepository) GetAllUsersFromWhitelist() ([]models.User, error) {
 	//data structure to where the data will be written to
-	var users []bson.M
+	var users []models.User
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("whitelist")
@@ -172,7 +172,7 @@ func (repo *MongoRepository) GetAllUsersFromWhitelist() (interface{}, error) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No users were found"}
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No users were found"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -234,9 +234,6 @@ func (repo *MongoRepository) DeleteUserFromWhitelistByEmail(email string) (bool,
 	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
-		}
 		//print the error stack
 		log.Error(err)
 

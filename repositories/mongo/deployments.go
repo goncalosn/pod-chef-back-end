@@ -43,16 +43,16 @@ func (repo *MongoRepository) GetDeploymentByUUID(uuid string) (*models.Deploymen
 	return &deployment, nil
 }
 
-//GetAllDeploymentsByUser method responsible for getting deployment
-func (repo *MongoRepository) GetAllDeploymentsByUser(user string) (*[]bson.M, error) {
+//GetDeploymentsFromUser method responsible for getting deployment
+func (repo *MongoRepository) GetDeploymentsFromUser(email string) ([]models.Deployment, error) {
 	//data structure to where the data will be written to
-	var deployments []bson.M
+	var deployments []models.Deployment
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter the search with
-	filter := bson.D{{"user", user}}
+	filter := bson.D{{"user", email}}
 
 	//call driven adapter responsible for getting a deployment's data from the database to a cursor
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "user": 0}})
@@ -80,7 +80,7 @@ func (repo *MongoRepository) GetAllDeploymentsByUser(user string) (*[]bson.M, er
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return &deployments, nil
+	return deployments, nil
 }
 
 //InsertDeployment method responsible for inserting a deployment in the database
@@ -121,9 +121,6 @@ func (repo *MongoRepository) DeleteDeploymentByUUID(uuid string) (bool, error) {
 	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Deployment not found"}
-		}
 		//print the error stack
 		log.Error(err)
 

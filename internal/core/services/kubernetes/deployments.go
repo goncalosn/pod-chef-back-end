@@ -71,7 +71,7 @@ func (srv *Service) CreateDeployment(email string, replicas *int32, image string
 //GetDeploymentsByUser service responsible for getting all deployments inside a namespace
 func (srv *Service) GetDeploymentsByUser(email string) (interface{}, error) {
 	//call driven adapter responsible for getting all deployments from database
-	response, err := srv.mongoRepository.GetAllDeploymentsByUser(email)
+	response, err := srv.mongoRepository.GetDeploymentsFromUser(email)
 
 	if err != nil {
 		//return the error sent by the repository

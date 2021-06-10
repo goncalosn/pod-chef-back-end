@@ -4,8 +4,6 @@ import (
 	email "pod-chef-back-end/internal/core/domain/email"
 	models "pod-chef-back-end/internal/core/domain/mongo"
 	mongo "pod-chef-back-end/internal/core/domain/mongo"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 //KubernetesRepository interface holding all the kubernetes respository methods
@@ -32,18 +30,18 @@ type KubernetesRepository interface {
 //MongoRepository interface holding all the mongo respository methods
 type MongoRepository interface {
 	GetUserByEmail(email string) (*mongo.User, error)
-	GetAllUsers() (interface{}, error)
+	GetAllUsers() (*[]models.User, error)
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
-	DeleteUserByEmail(email string) (interface{}, error)
+	DeleteUserByEmail(email string) (bool, error)
 
 	GetUserFromWhitelistByEmail(email string) (interface{}, error)
-	GetAllUsersFromWhitelist() (interface{}, error)
+	GetAllUsersFromWhitelist() ([]models.User, error)
 	InsertUserIntoWhitelist(email string) (bool, error)
 	DeleteUserFromWhitelistByEmail(email string) (bool, error)
 
 	GetDeploymentByUUID(uuid string) (*models.Deployment, error)
-	GetAllDeploymentsByUser(user string) (*[]bson.M, error)
-	InsertDeployment(uuid string, user string, image string) (bool, error)
+	GetDeploymentsFromUser(email string) ([]models.Deployment, error)
+	InsertDeployment(uuid string, email string, image string) (bool, error)
 	DeleteDeploymentByUUID(uuid string) (bool, error)
 }
 

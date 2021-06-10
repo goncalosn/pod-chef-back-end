@@ -115,6 +115,30 @@ func (h *HTTPHandler) getAllUsers(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
+//deleteUser delete user ffrom the system
+func (h *HTTPHandler) deleteUser(c echo.Context) error {
+	//geting query data
+	email := c.QueryParam("email")
+
+	//checking data for empty values
+	if email == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid request")
+	}
+
+	//call driver adapter responsible for deleting a user from the database
+	response, err := h.mongoServices.DeleteUser(email)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
 //getAllUsersFromWhitelist get all the users from the whitelist
 func (h *HTTPHandler) getAllUsersFromWhitelist(c echo.Context) error {
 	//call driver adapter responsible for getting all the users from the database
@@ -126,6 +150,52 @@ func (h *HTTPHandler) getAllUsersFromWhitelist(c echo.Context) error {
 
 		//return the error sent by the service
 		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//inviteUserToWhitelist create a new email with the
+func (h *HTTPHandler) inviteUserToWhitelist(c echo.Context) error {
+	//getting form data
+	email := c.FormValue("email")
+
+	//checking data for empty values
+	if email == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid request")
+	}
+
+	//call driver adapter responsible for creating the deployment in the kubernetes cluster
+	response, err := h.mongoServices.InviteUserToWhitelist(email)
+	if err != nil {
+		//type assertion of custom Error to default error
+		emailError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(emailError.Code, emailError)
+	}
+
+	return c.JSONPretty(http.StatusCreated, response, " ")
+}
+
+//removeUserFromWhitelist create a new email with the
+func (h *HTTPHandler) removeUserFromWhitelist(c echo.Context) error {
+	//getting form data
+	email := c.FormValue("email")
+
+	//checking data for empty values
+	if email == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid request")
+	}
+
+	//call driver adapter responsible for creating the deployment in the kubernetes cluster
+	response, err := h.mongoServices.RemoveUserFromWhitelist(email)
+	if err != nil {
+		//type assertion of custom Error to default error
+		emailError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(emailError.Code, emailError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")
