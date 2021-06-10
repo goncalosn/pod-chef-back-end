@@ -3,6 +3,7 @@ package mongo
 import (
 	"net/http"
 	"pod-chef-back-end/internal/core/domain/mongo"
+	"regexp"
 
 	"pod-chef-back-end/pkg"
 
@@ -73,6 +74,23 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	//checking data for empty values
 	if reqUser.Email == "" || reqUser.Hash == "" || reqUser.Name == "" {
 		return c.JSON(http.StatusBadRequest, "Invalid request")
+	}
+
+	//verify email lenght
+	if len(reqUser.Email) < 3 && len(reqUser.Email) > 254 {
+		return c.JSON(http.StatusBadRequest, "Email not valid")
+	}
+
+	var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+	//validate email
+	if !emailRegex.MatchString(reqUser.Email) {
+		return c.JSON(http.StatusBadRequest, "Email not valid")
+	}
+
+	//verify password length
+	if len(reqUser.Hash) < 7 {
+		return c.JSON(http.StatusBadRequest, "Password requires a minimum of 7 characters")
 	}
 
 	crypt := pkg.EncryptPassword(reqUser.Hash)
