@@ -9,7 +9,7 @@ COPY . .
 RUN go mod download
 
 #compilar e criar binário
-RUN go build -o bin ./cmd/pod-chef-server/main.go
+RUN go build -o bin ./cmd/dev/main.go
 
 FROM alpine
 COPY --from=0 /build/bin /podchef

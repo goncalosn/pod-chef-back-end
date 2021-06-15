@@ -50,7 +50,7 @@ func main() {
 	mongoService := mongoServices.NewMongoService(mongoRepository, emailRepository)
 
 	//initalize kubernetes access configurations
-	kubernetesRepository := kubernetesRepo.NewKubernetesRepository()
+	kubernetesRepository := kubernetesRepo.NewKubernetesProdClient()
 	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository)
 
 	//initialize the kubernetes http handlers
