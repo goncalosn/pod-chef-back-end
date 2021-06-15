@@ -8,14 +8,29 @@ import (
 )
 
 //CreateDeployment service responsible for creating a deployment inside a new namespace
-func (srv *Service) CreateDeployment(email string, replicas *int32, image string) (interface{}, error) {
+func (srv *Service) CreateDeployment(email string, role string, replicas *int32, image string) (interface{}, error) {
+	//check the number os deployments by the user
+	deployments, err := srv.mongoRepository.GetDeploymentsFromUser(email)
+
+	if err != nil {
+		//return the error sent by the repository
+		return nil, err
+	}
+
+	//check if user has already the max number os deployments
+	if role == "admin" {
+		if len(deployments) > 3 {
+			//return a custom error
+			return nil, &pkg.Error{Err: err, Code: http.StatusBadRequest, Message: "Max number 3 deployments permited per user"}
+		}
+	}
 
 	appUUID := uuid.NewV4().String() //generate uuid for this deployment
 
 	namespaceUUID := "namespace-" + appUUID //generate name for namespace
 
 	//call driven adapter responsible for creating namespaces inside the kubernetes cluster
-	_, err := srv.kubernetesRepository.CreateNamespace(namespaceUUID)
+	_, err = srv.kubernetesRepository.CreateNamespace(namespaceUUID)
 	if err != nil {
 		//return error from the kubernetes repository method
 		return nil, err

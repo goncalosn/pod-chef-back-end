@@ -25,6 +25,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	email := claims["email"].(string)
+	role := claims["role"].(string)
 
 	//parsing replicas to int64
 	replicasI64, err := strconv.ParseInt(replicas, 10, 32)
@@ -40,7 +41,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	replicasI32 := int32(replicasI64)
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.kubernetesServices.CreateDeployment(email, &replicasI32, image)
+	response, err := h.kubernetesServices.CreateDeployment(email, role, &replicasI32, image)
 	if err != nil {
 		//type assertion of custom Error to default error
 		kubernetesError := err.(*pkg.Error)

@@ -11,7 +11,7 @@ type KubernetesServices interface {
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(email string, replicas *int32, image string) (interface{}, error)
+	CreateDeployment(email string, role string, replicas *int32, image string) (interface{}, error)
 	GetDeploymentsByUser(email string) (interface{}, error)
 	GetDeploymentByUserAndName(email string, name string) (interface{}, error)
 	DeleteDeploymentByUserAndUUID(email string, uuid string) (interface{}, error)
