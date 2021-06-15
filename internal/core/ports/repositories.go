@@ -33,6 +33,9 @@ type MongoRepository interface {
 	GetAllUsers() (*[]models.User, error)
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
 	DeleteUserByEmail(email string) (bool, error)
+	UpdateUserPassword(email string, hash string) (bool, error)
+	UpdateUserRole(email string, role string) (bool, error) 
+	UpdateUserName(email string, name string) (bool, error)
 
 	GetUserFromWhitelistByEmail(email string) (interface{}, error)
 	GetAllUsersFromWhitelist() ([]models.User, error)

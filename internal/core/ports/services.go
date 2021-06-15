@@ -31,8 +31,13 @@ type KubernetesServices interface {
 type MongoServices interface {
 	GetUserByEmail(email string) (*models.User, error)
 	GetAllUsers() (*[]models.User, error)
-	InsertUser(email string, password string, name string, role string) (*models.User, error)
+	InsertUser(email string, password string, name string) (*models.User, error)
 	DeleteUser(name string) (bool, error)
+	UpdateSelfPassword(email string, hash string) (bool, error)
+	ResetUserPassword(to string, password string) (bool, error)
+	UpdateUserRole(email string, role string) (bool, error)
+	UpdateUserName(email string, name string) (bool, error)
+
 	GetAllUsersFromWhitelist() (*[]models.User, error)
 	InviteUserToWhitelist(to string) (bool, error)
 	RemoveUserFromWhitelist(to string) (bool, error)

@@ -128,6 +128,96 @@ func (repo *MongoRepository) DeleteUserByEmail(email string) (bool, error) {
 	return true, nil
 }
 
+//UpdateUserPassword method responsible for updating a user password
+func (repo *MongoRepository) UpdateUserPassword(email string, hash string) (bool, error) {
+	//choose the database and collection
+	collection := repo.Client.Database("podchef").Collection("users")
+
+	//data to filter with
+	filter := bson.D{{"email", email}}
+	//data to update
+	update := bson.D{
+		{"$set", bson.D{{"hash", hash}}},
+	}
+
+	//call driven adapter responsible for updating a fild  from the database
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
+
+		//print the error stack
+		log.Error(err)
+
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	return true, nil
+}
+
+//UpdateUserRole method responsible for updating a user role
+func (repo *MongoRepository) UpdateUserRole(email string, role string) (bool, error) {
+	//choose the database and collection
+	collection := repo.Client.Database("podchef").Collection("users")
+
+	//data to filter with
+	filter := bson.D{{"email", email}}
+	//data to update
+	update := bson.D{
+		{"$set", bson.D{{"role", role}}},
+	}
+
+	//call driven adapter responsible for updating a fild  from the database
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
+
+		//print the error stack
+		log.Error(err)
+
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	return true, nil
+}
+
+//UpdateUserName method responsible for updating a user role
+func (repo *MongoRepository) UpdateUserName(email string, name string) (bool, error) {
+	//choose the database and collection
+	collection := repo.Client.Database("podchef").Collection("users")
+
+	//data to filter with
+	filter := bson.D{{"email", email}}
+	//data to update
+	update := bson.D{
+		{"$set", bson.D{{"name", name}}},
+	}
+
+	//call driven adapter responsible for updating a fild  from the database
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		}
+
+		//print the error stack
+		log.Error(err)
+
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	return true, nil
+}
+
 //GetUserFromWhitelistByEmail method responsible for getting a user from the database
 func (repo *MongoRepository) GetUserFromWhitelistByEmail(email string) (interface{}, error) {
 	//data structure to where the data will be written to

@@ -7,6 +7,7 @@ import (
 
 	"pod-chef-back-end/pkg"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -95,7 +96,7 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 
 	crypt := pkg.EncryptPassword(reqUser.Hash)
 	//call driver adapter responsible for getting the user from the database
-	user, err := h.mongoServices.InsertUser(reqUser.Email, string(crypt), reqUser.Name, "user")
+	user, err := h.mongoServices.InsertUser(reqUser.Email, string(crypt), reqUser.Name)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -145,6 +146,122 @@ func (h *HTTPHandler) deleteUser(c echo.Context) error {
 
 	//call driver adapter responsible for deleting a user from the database
 	response, err := h.mongoServices.DeleteUser(email)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//updateSelfPassword update password
+func (h *HTTPHandler) updateSelfPassword(c echo.Context) error {
+	//geting form data
+	password := c.FormValue("password")
+
+	//checking data for empty values
+	if len(password) < 7 {
+		return c.JSON(http.StatusBadRequest, "Password requires a minimum of 7 characters")
+	}
+
+	//get the token's claims
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	email := claims["email"].(string)
+
+	crypt := pkg.EncryptPassword(password)
+	//call driver adapter responsible for updating a user's password from the database
+	response, err := h.mongoServices.UpdateSelfPassword(email, string(crypt))
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//resetPassword update password
+func (h *HTTPHandler) resetPassword(c echo.Context) error {
+	//geting query data
+	email := c.QueryParam("email")
+
+	//checking data for empty values
+	if email == "" {
+		return c.JSON(http.StatusBadRequest, "Email not valid")
+	}
+
+	//generate not so random password
+	generated := pkg.GeneratePassword()
+
+	//call driver adapter responsible for reseting a user's password
+	response, err := h.mongoServices.ResetUserPassword(email, generated)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//updateSelfName update name
+func (h *HTTPHandler) updateSelfName(c echo.Context) error {
+	//geting form data
+	name := c.FormValue("name")
+
+	//checking data for empty values
+	if name == "" {
+		return c.JSON(http.StatusBadRequest, "Name is too short")
+	}
+
+	//get the token's claims
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	email := claims["email"].(string)
+
+	//call driver adapter responsible for updating a user's name from the database
+	response, err := h.mongoServices.UpdateUserName(email, name)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//updateUserRole update user role
+func (h *HTTPHandler) updateUserRole(c echo.Context) error {
+	//geting form data
+	email := c.FormValue("email")
+	role := c.FormValue("role")
+
+	//checking data for empty values
+	if email == "" || role == "" {
+		return c.JSON(http.StatusBadRequest, "Invalid data")
+	}
+
+	//checking for role validity
+	if role != "member" && role != "admin" {
+		return c.JSON(http.StatusBadRequest, "Invalid role")
+	}
+
+	//call driver adapter responsible updating a user's role
+	response, err := h.mongoServices.UpdateUserRole(email, role)
 
 	if err != nil {
 		//type assertion of custom Error to default error

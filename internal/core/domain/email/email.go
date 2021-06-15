@@ -5,4 +5,5 @@ type Email struct {
 	ReceiverName string
 	SenderName   string
 	Subject      string
+	Password     string
 }
