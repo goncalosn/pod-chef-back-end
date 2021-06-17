@@ -6,13 +6,15 @@ ENV GO111MODULE=on \
 WORKDIR /build
 COPY . .
 
-RUN go mod download
+RUN go mod download -x
 
 #compilar e criar binário
-RUN go build -o bin ./cmd/dev/main.go
+RUN go build -o bin ./cmd/prod/main.go
 
 FROM alpine
-COPY --from=0 /build/bin /podchef
+WORKDIR /app
+COPY --from=0 /build/bin bin
+COPY .env .
 
-ENTRYPOINT ["/podchef"]
+ENTRYPOINT ["./bin"]
 EXPOSE 1323

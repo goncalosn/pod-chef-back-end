@@ -6,7 +6,7 @@ ENV GO111MODULE=on \
 WORKDIR /build
 COPY . .
 
-RUN go mod download
+RUN go mod download -x
 
 #compilar e criar binário
 RUN go build -o bin ./cmd/demo/main.go

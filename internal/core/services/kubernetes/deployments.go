@@ -18,7 +18,7 @@ func (srv *Service) CreateDeployment(email string, role string, replicas *int32,
 	}
 
 	//check if user has already the max number os deployments
-	if role == "admin" {
+	if role != "admin" {
 		if len(deployments) > 3 {
 			//return a custom error
 			return nil, &pkg.Error{Err: err, Code: http.StatusBadRequest, Message: "Max number 3 deployments permited per user"}
@@ -63,7 +63,7 @@ func (srv *Service) CreateDeployment(email string, role string, replicas *int32,
 
 	ingressUUID := "ingress-" + appUUID //generate name for the service
 	//create ingress to expose the service
-	_, err = srv.kubernetesRepository.CreateIngress(namespaceUUID, ingressUUID, "app-"+appUUID)
+	_, err = srv.kubernetesRepository.CreateIngress(namespaceUUID, ingressUUID, appUUID)
 	if err != nil {
 		//creation of the ingress went wrong, delete everything inside it's namespace
 		//call driven adapter responsible for deleting namespaces inside the kubernetes cluster

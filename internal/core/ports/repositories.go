@@ -24,7 +24,7 @@ type KubernetesRepository interface {
 	CreateClusterIPService(namespace string, name string) (interface{}, error)
 
 	GetIngressByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateIngress(namespace string, name string, host string) (interface{}, error)
+	CreateIngress(namespace string, name string, uuid string) (interface{}, error)
 }
 
 //MongoRepository interface holding all the mongo respository methods
@@ -34,7 +34,7 @@ type MongoRepository interface {
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
 	DeleteUserByEmail(email string) (bool, error)
 	UpdateUserPassword(email string, hash string) (bool, error)
-	UpdateUserRole(email string, role string) (bool, error) 
+	UpdateUserRole(email string, role string) (bool, error)
 	UpdateUserName(email string, name string) (bool, error)
 
 	GetUserFromWhitelistByEmail(email string) (interface{}, error)

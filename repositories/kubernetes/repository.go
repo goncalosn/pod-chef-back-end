@@ -56,21 +56,26 @@ func DevClient() *kubernetes.Clientset {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	log.Info("connected to the kubernetes api")
+
 	return clientset
 }
 
 //ProdClient responsible for creating the connection to the cluster in production environment
 func ProdClient() *kubernetes.Clientset {
 	// creates the in-cluster config
+	log.Info("starting connection to the kubernetes api")
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err.Error())
 	}
 	// creates the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err.Error())
 	}
+	log.Info("connected to the kubernetes api")
 
 	return clientset
 }

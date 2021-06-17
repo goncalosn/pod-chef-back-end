@@ -30,6 +30,7 @@ func main() {
 	e := echo.New()
 
 	// Middleware
+	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -38,7 +39,7 @@ func main() {
 	}))
 
 	var isLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte(viper.Get("TOKEN_SECRET").(string)),
+		SigningKey: []byte(viper.GetString("TOKEN_SECRET")),
 	})
 
 	//initalize email access configurations
