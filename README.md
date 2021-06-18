@@ -21,5 +21,5 @@ docker push podchef/production:latest
 ## Run in production
 
 ```
-sudo docker run -d --net=host --volume=$HOME/.kube/config:/root/.kube/config  podchef/production
+sudo docker run -d --name podchef --net=host --volume=$HOME/.kube/config:/root/.kube/config  podchef/production
 ```

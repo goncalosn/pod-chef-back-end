@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/gommon/log"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
@@ -15,15 +16,22 @@ type KubernetesRepository struct {
 	Clientset *kubernetes.Clientset
 }
 
-//NewKubernetesRepository new connection to the cluster
-func NewKubernetesRepository() *KubernetesRepository {
+//NewKubernetesDevClient new connection to the cluster
+func NewKubernetesDevClient() *KubernetesRepository {
 	return &KubernetesRepository{
-		Clientset: Client(),
+		Clientset: DevClient(),
 	}
 }
 
-//Client responsible for creating the connection to the cluster
-func Client() *kubernetes.Clientset {
+//NewKubernetesProdClient new connection to the cluster
+func NewKubernetesProdClient() *KubernetesRepository {
+	return &KubernetesRepository{
+		Clientset: ProdClient(),
+	}
+}
+
+//DevClient responsible for creating the connection to the cluster in dev environment
+func DevClient() *kubernetes.Clientset {
 	var kubeconfig *string
 
 	log.Info("creating flag for kubeconfig")
@@ -48,5 +56,26 @@ func Client() *kubernetes.Clientset {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	log.Info("connected to the kubernetes api")
+
+	return clientset
+}
+
+//ProdClient responsible for creating the connection to the cluster in production environment
+func ProdClient() *kubernetes.Clientset {
+	// creates the in-cluster config
+	log.Info("starting connection to the kubernetes api")
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Info("connected to the kubernetes api")
+
 	return clientset
 }

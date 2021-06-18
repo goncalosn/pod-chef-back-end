@@ -14,19 +14,19 @@ type HTTPHandler struct {
 }
 
 //NewHTTPHandler where services are injected
-func NewHTTPHandler(kubernetesServices ports.KubernetesServices, mongoServices ports.MongoServices) *HTTPHandler {
+func NewHTTPHandler(kubernetesServices ports.KubernetesServices) *HTTPHandler {
 	return &HTTPHandler{
 		kubernetesServices: kubernetesServices,
-		mongoServices:      mongoServices,
 	}
 }
 
 //Handlers contains containers every handler associated with kubernetes
-func Handlers(e *echo.Echo, service *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
-	e.GET("/nodes", service.getNodes, isLoggedIn, pkg.IsAdmin)
-	e.GET("/node", service.getNodeByName, isLoggedIn, pkg.IsAdmin)
+func Handlers(e *echo.Echo, handler *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
+	e.GET("/nodes", handler.getNodes, isLoggedIn, pkg.IsAdmin)
+	e.GET("/node", handler.getNodeByName, isLoggedIn, pkg.IsAdmin)
 
-	e.GET("/deployments", service.getDeploymentsByUserAndName, isLoggedIn)
-	e.GET("/deployment", service.getDeploymentsByUser, isLoggedIn)
-	e.POST("/deployment", service.createDeployment, isLoggedIn)
+	e.POST("/deployment", handler.createDeployment, isLoggedIn)
+	e.GET("/deployments", handler.getDeploymentsByUser, isLoggedIn)
+	e.GET("/deployment", handler.getDeploymentByUserAndName, isLoggedIn)
+	e.DELETE("/deployment", handler.deleteDeploymentByUserAndName, isLoggedIn)
 }

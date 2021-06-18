@@ -11,47 +11,57 @@ import (
 	"github.com/labstack/gommon/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//GetDeploymentByName method responsible for getting a deployment
-func (repo *MongoRepository) GetDeploymentByName(name string) (interface{}, error) {
+//GetDeploymentByUUID method responsible for getting a deployment
+func (repo *MongoRepository) GetDeploymentByUUID(uuid string) (*models.Deployment, error) {
 	//data structure to where the data will be written to
-	var deployment *models.Deployment
+	var deployment models.Deployment
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter the search with
-	filter := bson.D{{"name", name}}
+	filter := bson.D{{"uuid", uuid}}
 
 	//call driven adapter responsible for getting a user data from the database
-	err := collection.FindOne(context.Background(), filter).Decode(&deployment)
-	if err != nil && err != mongo.ErrNoDocuments {
+	err := collection.FindOne(context.Background(), filter, &options.FindOneOptions{Projection: bson.M{"_id": 0}}).Decode(&deployment)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Deployment not found"}
+		}
+
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+
 	}
 
-	return deployment, nil
+	return &deployment, nil
 }
 
-//GetAllDeploymentsByUser method responsible for getting deployment
-func (repo *MongoRepository) GetAllDeploymentsByUser(userEmail string) (interface{}, error) {
+//GetDeploymentsFromUser method responsible for getting deployment
+func (repo *MongoRepository) GetDeploymentsFromUser(email string) ([]models.Deployment, error) {
 	//data structure to where the data will be written to
-	var deployments *[]models.Deployment
+	var deployments []models.Deployment
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter the search with
-	filter := bson.D{{"user_email", userEmail}}
+	filter := bson.D{{"user", email}}
 
 	//call driven adapter responsible for getting a deployment's data from the database to a cursor
-	cur, err := collection.Find(context.Background(), filter)
+	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "user": 0}})
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No deployments were found"}
+		}
+
 		//print the error stack
 		log.Error(err)
 
@@ -74,39 +84,38 @@ func (repo *MongoRepository) GetAllDeploymentsByUser(userEmail string) (interfac
 }
 
 //InsertDeployment method responsible for inserting a deployment in the database
-func (repo *MongoRepository) InsertDeployment(name string, namespace string, userEmail string, dockerImage string) (interface{}, error) {
+func (repo *MongoRepository) InsertDeployment(uuid string, user string, image string) (bool, error) {
 	//data structure containing the data to be inserted
 	deployment := &models.Deployment{
-		Name:        name,
-		Namespace:   namespace,
-		UserEmail:   userEmail,
-		CreatedAt:   time.Now().UTC().String(),
-		DockerImage: dockerImage,
+		UUID:      uuid,
+		User:      user,
+		CreatedAt: time.Now().UTC().String(),
+		Image:     image,
 	}
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//call driven adapter responsible for inserting a user into the database
-	response, err := collection.InsertOne(context.Background(), deployment)
+	_, err := collection.InsertOne(context.Background(), deployment)
 	if err != nil {
 		//print the error stack
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return response, nil
+	return true, nil
 }
 
-//DeleteDeploymentByName method responsible for deleting a deployment
-func (repo *MongoRepository) DeleteDeploymentByName(name string) (interface{}, error) {
+//DeleteDeploymentByUUID method responsible for deleting a deployment
+func (repo *MongoRepository) DeleteDeploymentByUUID(uuid string) (bool, error) {
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter with
-	filter := bson.D{{"name", name}}
+	filter := bson.D{{"uuid", uuid}}
 
 	//call driven adapter responsible for deleting a deployment from the database
 	_, err := collection.DeleteOne(context.TODO(), filter)
@@ -116,8 +125,8 @@ func (repo *MongoRepository) DeleteDeploymentByName(name string) (interface{}, e
 		log.Error(err)
 
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	return nil, nil
+	return true, nil
 }

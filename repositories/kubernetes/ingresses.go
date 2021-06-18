@@ -27,8 +27,8 @@ func (ingressHandler *KubernetesRepository) GetIngressByNameAndNamespace(name st
 	return response, nil
 }
 
-//CreateIngress method responsible for creating an ingress by it's name and namespace and a host
-func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name string, host string) (interface{}, error) {
+//CreateIngress method responsible for creating an ingress by it's name and namespace and a uuid
+func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name string, uuid string) (interface{}, error) {
 	//call driven adapter responsible for dealing wtih ingresses
 	ingressClient := ingressHandler.Clientset.NetworkingV1().Ingresses(namespace)
 
@@ -44,7 +44,7 @@ func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name
 		Spec: networkingv1.IngressSpec{
 			Rules: []networkingv1.IngressRule{
 				{
-					Host: host,
+					Host: uuid,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -53,9 +53,9 @@ func (ingressHandler *KubernetesRepository) CreateIngress(namespace string, name
 									PathType: (*networkingv1.PathType)(&pathType),
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
-											Name: "gateway",
+											Name: "service-" + uuid,
 											Port: networkingv1.ServiceBackendPort{
-												Number: 8080,
+												Number: 80,
 											},
 										},
 									},

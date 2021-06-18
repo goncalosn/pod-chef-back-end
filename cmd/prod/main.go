@@ -9,10 +9,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 
-	emailHandlers "pod-chef-back-end/handlers/email"
 	kubernetesHandlers "pod-chef-back-end/handlers/kubernetes"
 	mongoHandlers "pod-chef-back-end/handlers/mongo"
-	emailServices "pod-chef-back-end/internal/core/services/email"
 	kubernetesServices "pod-chef-back-end/internal/core/services/kubernetes"
 	mongoServices "pod-chef-back-end/internal/core/services/mongo"
 	emailRepo "pod-chef-back-end/repositories/email"
@@ -22,7 +20,7 @@ import (
 
 func main() {
 	//setup env file
-	viper.SetConfigFile("../../.env")
+	viper.SetConfigFile(".env")
 	//read env file
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -32,6 +30,7 @@ func main() {
 	e := echo.New()
 
 	// Middleware
+	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -40,32 +39,28 @@ func main() {
 	}))
 
 	var isLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte(viper.Get("TOKEN_SECRET").(string)),
+		SigningKey: []byte(viper.GetString("TOKEN_SECRET")),
 	})
 
-	//initalize kubernetes access configurations
-	kubernetesRepository := kubernetesRepo.NewKubernetesRepository()
-	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository)
+	//initalize email access configurations
+	emailRepository := emailRepo.NewEmailRepository(viper.GetViper())
+	// emailService := emailServices.NewEmailService(emailRepository, mongoRepository)
 
 	//initalize mongo access configurations
 	mongoRepository := mongoRepo.NewMongoRepository(viper.GetViper())
-	mongoService := mongoServices.NewMongoService(mongoRepository)
+	mongoService := mongoServices.NewMongoService(mongoRepository, emailRepository)
 
-	//initalize mongo access configurations
-	emailRepository := emailRepo.NewEmailRepository(viper.GetViper())
-	emailService := emailServices.NewEmailService(emailRepository)
+	//initalize kubernetes access configurations
+	kubernetesRepository := kubernetesRepo.NewKubernetesProdClient()
+	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository)
 
 	//initialize the kubernetes http handlers
-	kubernetesHandler := kubernetesHandlers.NewHTTPHandler(kubernetesService, mongoService)
+	kubernetesHandler := kubernetesHandlers.NewHTTPHandler(kubernetesService)
 	kubernetesHandlers.Handlers(e, kubernetesHandler, isLoggedIn)
 
 	//initialize the mongo http handlers
 	mongoHandler := mongoHandlers.NewHTTPHandler(mongoService, viper.GetViper())
 	mongoHandlers.Handlers(e, mongoHandler, isLoggedIn)
-
-	//initialize the email http handlers
-	emailHandler := emailHandlers.NewHTTPHandler(emailService, viper.GetViper())
-	emailHandlers.Handlers(e, emailHandler, isLoggedIn)
 
 	e.GET("/api", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello World!")

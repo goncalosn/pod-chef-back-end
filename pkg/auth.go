@@ -1,9 +1,12 @@
 package pkg
 
 import (
-	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 	"net/http"
+	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -21,7 +24,7 @@ func GenerateJWT(viper *viper.Viper, name string, email string, role string) (in
 	claims["name"] = name
 	claims["email"] = email
 	claims["role"] = role
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
 
 	secret := viper.Get("TOKEN_SECRET").(string)
 
@@ -68,4 +71,18 @@ func ComparePasswords(hashedPassword string, rawPassword string) bool {
 		return false
 	}
 	return true
+}
+
+//GeneratePassword returns a string of 8 characters
+func GeneratePassword() string {
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		"0123456789")
+	length := 8
+	var b strings.Builder
+	for i := 0; i < length; i++ {
+		b.WriteRune(chars[rand.Intn(len(chars))])
+	}
+	return b.String()
 }

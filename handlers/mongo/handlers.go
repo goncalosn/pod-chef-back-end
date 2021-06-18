@@ -1,7 +1,8 @@
-package handlers
+package mongo
 
 import (
-	ports "pod-chef-back-end/internal/core/ports"
+	"pod-chef-back-end/internal/core/ports"
+	"pod-chef-back-end/pkg"
 
 	echo "github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -22,7 +23,17 @@ func NewHTTPHandler(mongoServices ports.MongoServices, viper *viper.Viper) *HTTP
 }
 
 //Handlers contains containers every handler associated with kubernetes
-func Handlers(e *echo.Echo, service *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
-	e.POST("/login", service.login)
-	e.POST("/signup", service.signup)
+func Handlers(e *echo.Echo, handler *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
+	e.POST("/login", handler.login)
+	e.POST("/signup", handler.signup)
+	e.GET("/users", handler.getAllUsers, isLoggedIn, pkg.IsAdmin)
+	e.DELETE("/user", handler.deleteUser, isLoggedIn, pkg.IsAdmin)
+	e.PUT("/user/role", handler.updateUserRole, isLoggedIn, pkg.IsAdmin)
+	e.PUT("/user/name", handler.updateSelfName, isLoggedIn)
+	e.PUT("/user/password", handler.updateSelfPassword, isLoggedIn)
+	e.POST("/user/password-reset", handler.resetPassword, isLoggedIn, pkg.IsAdmin)
+
+	e.GET("/whitelist", handler.getAllUsersFromWhitelist, isLoggedIn, pkg.IsAdmin)
+	e.POST("/whitelist", handler.inviteUserToWhitelist, isLoggedIn, pkg.IsAdmin)
+	e.DELETE("/whitelist", handler.removeUserFromWhitelist, isLoggedIn, pkg.IsAdmin)
 }

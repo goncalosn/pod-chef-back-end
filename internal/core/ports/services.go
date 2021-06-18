@@ -11,9 +11,10 @@ type KubernetesServices interface {
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(email string, replicas *int32, image string) (interface{}, error)
+	CreateDeployment(email string, role string, replicas *int32, image string) (interface{}, error)
 	GetDeploymentsByUser(email string) (interface{}, error)
 	GetDeploymentByUserAndName(email string, name string) (interface{}, error)
+	DeleteDeploymentByUserAndUUID(email string, uuid string) (interface{}, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
@@ -29,11 +30,15 @@ type KubernetesServices interface {
 //MongoServices interface holding all the mongo services
 type MongoServices interface {
 	GetUserByEmail(email string) (*models.User, error)
-	InsertUser(email string, password string, name string, role string) (*models.User, error)
-	DeleteUser(name string) (interface{}, error)
-}
+	GetAllUsers() (*[]models.User, error)
+	InsertUser(email string, password string, name string) (*models.User, error)
+	DeleteUser(name string) (bool, error)
+	UpdateSelfPassword(email string, hash string) (bool, error)
+	ResetUserPassword(to string, password string) (bool, error)
+	UpdateUserRole(email string, role string) (bool, error)
+	UpdateUserName(email string, name string) (bool, error)
 
-//EmailServices interface holding all the email services
-type EmailServices interface {
-	SendEmail(to string, subject string, template string) (interface{}, error)
+	GetAllUsersFromWhitelist() (*[]models.User, error)
+	InviteUserToWhitelist(to string) (bool, error)
+	RemoveUserFromWhitelist(to string) (bool, error)
 }
