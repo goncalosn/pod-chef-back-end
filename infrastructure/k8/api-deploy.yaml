@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: api
+  name: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: api
+  template:
+    metadata:
+      labels:
+        run: api
+    spec:
+      containers:
+      - name: api
+        image: podchef/production:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 1323
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: api
+  name: api
+  annotations:
+    haproxy.org/check: "enabled"
+    haproxy.org/forwarded-for: "enabled"
+    haproxy.org/load-balance: "roundrobin"
+spec:
+  selector:
+    run: api
+  ports:
+  - name: port-1
+    port: 80
+    protocol: TCP
+    targetPort: 1323
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  namespace: default
+spec:
+  rules:
+  - host: "api"
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: api
+            port: 
+              number: 80
