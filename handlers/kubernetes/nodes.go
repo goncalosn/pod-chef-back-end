@@ -9,16 +9,24 @@ import (
 
 //getNodeByName get node by name from the kubenretes cluster
 func (h *HTTPHandler) getNodeByName(c echo.Context) error {
-	//geting query data
-	node := c.QueryParam("node")
+	//body structure
+	type body struct {
+		Node string `json:"node"`
+	}
+
+	data := new(body)
+
+	if err := c.Bind(data); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+	}
 
 	//checking data for empty values
-	if node == "" {
-		return c.JSON(http.StatusBadRequest, "Invalid request")
+	if data.Node == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
 
 	//call driver adapter responsible for getting the node from the kubernetes cluster
-	response, err := h.kubernetesServices.GetNodeByName(node)
+	response, err := h.kubernetesServices.GetNodeByName(data.Node)
 
 	if err != nil {
 		//type assertion of custom Error to default error
