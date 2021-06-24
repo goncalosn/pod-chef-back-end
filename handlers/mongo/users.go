@@ -49,7 +49,7 @@ func (h *HTTPHandler) login(c echo.Context) error {
 		}
 	}
 
-	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role)
+	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID)
 	if err != nil {
 		//type assertion of custom Error to default error
 		tokenError := err.(*pkg.Error)
@@ -105,12 +105,12 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	if err != nil {
 		//type assertion of custom Error to default error
 		mongoError := err.(*pkg.Error)
-
 		//return the error sent by the service
 		return c.JSON(mongoError.Code, mongoError)
 	}
+
 	// generate json web token
-	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role)
+	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID)
 	if err != nil {
 		//type assertion of custom Error to default error
 		tokenError := err.(*pkg.Error)
@@ -142,22 +142,31 @@ func (h *HTTPHandler) getAllUsers(c echo.Context) error {
 func (h *HTTPHandler) deleteUser(c echo.Context) error {
 	//body structure
 	type body struct {
-		Email string `json:"email"`
+		ID string `json:"id"`
 	}
 
 	data := new(body)
 
 	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Incomplete request"})
 	}
 
 	//checking data for empty values
-	if data.Email == "" {
-		return c.JSON(http.StatusBadRequest, "Invalid request")
+	if data.ID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Request with empty values"})
+	}
+
+	//get the token's claims
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	tokenID := claims["id"].(string)
+
+	if tokenID == data.ID {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "User cannot delete himself"})
 	}
 
 	//call driver adapter responsible for deleting a user from the database
-	response, err := h.mongoServices.DeleteUser(data.Email)
+	response, err := h.mongoServices.DeleteUser(data.ID)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -212,7 +221,7 @@ func (h *HTTPHandler) updateSelfPassword(c echo.Context) error {
 func (h *HTTPHandler) resetPassword(c echo.Context) error {
 	//body structure
 	type body struct {
-		Email string `json:"email"`
+		ID string `json:"id"`
 	}
 
 	data := new(body)
@@ -222,7 +231,7 @@ func (h *HTTPHandler) resetPassword(c echo.Context) error {
 	}
 
 	//checking data for empty values
-	if data.Email == "" {
+	if data.ID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
 
@@ -230,7 +239,7 @@ func (h *HTTPHandler) resetPassword(c echo.Context) error {
 	generated := pkg.GeneratePassword()
 
 	//call driver adapter responsible for reseting a user's password
-	response, err := h.mongoServices.ResetUserPassword(data.Email, generated)
+	response, err := h.mongoServices.ResetUserPassword(data.ID, generated)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -284,8 +293,8 @@ func (h *HTTPHandler) updateSelfName(c echo.Context) error {
 func (h *HTTPHandler) updateUserRole(c echo.Context) error {
 	//body structure
 	type body struct {
-		Email string `json:"email"`
-		Role  string `json:"role"`
+		ID   string `json:"id"`
+		Role string `json:"role"`
 	}
 
 	data := new(body)
@@ -294,7 +303,7 @@ func (h *HTTPHandler) updateUserRole(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
 	//checking data for empty values
-	if data.Email == "" || data.Role == "" {
+	if data.ID == "" || data.Role == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
 
@@ -304,7 +313,7 @@ func (h *HTTPHandler) updateUserRole(c echo.Context) error {
 	}
 
 	//call driver adapter responsible updating a user's role
-	response, err := h.mongoServices.UpdateUserRole(data.Email, data.Role)
+	response, err := h.mongoServices.UpdateUserRole(data.ID, data.Role)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -312,83 +321,6 @@ func (h *HTTPHandler) updateUserRole(c echo.Context) error {
 
 		//return the error sent by the service
 		return c.JSON(mongoError.Code, mongoError)
-	}
-
-	return c.JSONPretty(http.StatusOK, response, " ")
-}
-
-//getAllUsersFromWhitelist get all the users from the whitelist
-func (h *HTTPHandler) getAllUsersFromWhitelist(c echo.Context) error {
-	//call driver adapter responsible for getting all the users from the database
-	response, err := h.mongoServices.GetAllUsersFromWhitelist()
-
-	if err != nil {
-		//type assertion of custom Error to default error
-		mongoError := err.(*pkg.Error)
-
-		//return the error sent by the service
-		return c.JSON(mongoError.Code, mongoError)
-	}
-
-	return c.JSONPretty(http.StatusOK, response, " ")
-}
-
-//inviteUserToWhitelist create a new email with the
-func (h *HTTPHandler) inviteUserToWhitelist(c echo.Context) error {
-	//body structure
-	type body struct {
-		Email string `json:"email"`
-	}
-
-	data := new(body)
-
-	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
-	}
-	//checking data for empty values
-	if data.Email == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
-	}
-
-	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.mongoServices.InviteUserToWhitelist(data.Email)
-	if err != nil {
-		//type assertion of custom Error to default error
-		emailError := err.(*pkg.Error)
-
-		//return the error sent by the service
-		return c.JSON(emailError.Code, emailError)
-	}
-
-	return c.JSONPretty(http.StatusCreated, response, " ")
-}
-
-//removeUserFromWhitelist create a new email with the
-func (h *HTTPHandler) removeUserFromWhitelist(c echo.Context) error {
-	//body structure
-	type body struct {
-		Email string `json:"email"`
-	}
-
-	data := new(body)
-
-	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
-	}
-
-	//checking data for empty values
-	if data.Email == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
-	}
-
-	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.mongoServices.RemoveUserFromWhitelist(data.Email)
-	if err != nil {
-		//type assertion of custom Error to default error
-		emailError := err.(*pkg.Error)
-
-		//return the error sent by the service
-		return c.JSON(emailError.Code, emailError)
 	}
 
 	return c.JSONPretty(http.StatusOK, response, " ")

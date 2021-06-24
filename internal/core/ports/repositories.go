@@ -30,17 +30,19 @@ type KubernetesRepository interface {
 //MongoRepository interface holding all the mongo respository methods
 type MongoRepository interface {
 	GetUserByEmail(email string) (*mongo.User, error)
+	GetUserByID(id string) (*mongo.User, error)
 	GetAllUsers() (*[]models.User, error)
 	InsertUser(email string, hash string, name string, role string) (*mongo.User, error)
-	DeleteUserByEmail(email string) (bool, error)
-	UpdateUserPassword(email string, hash string) (bool, error)
-	UpdateUserRole(email string, role string) (bool, error)
-	UpdateUserName(email string, name string) (bool, error)
+	DeleteUserByID(id string) (bool, error)
+	UpdateUserPassword(id string, hash string) (bool, error)
+	UpdateUserRole(id string, role string) (bool, error)
+	UpdateUserName(id string, name string) (bool, error)
 
-	GetUserFromWhitelistByEmail(email string) (interface{}, error)
-	GetAllUsersFromWhitelist() ([]models.User, error)
-	InsertUserIntoWhitelist(email string) (bool, error)
-	DeleteUserFromWhitelistByEmail(email string) (bool, error)
+	GetUserFromWhitelistByEmail(email string) (*models.WhitelistUser, error)
+	GetUserFromWhitelistByID(id string) (*models.WhitelistUser, error)
+	GetAllUsersFromWhitelist() ([]models.WhitelistUser, error)
+	InsertUserIntoWhitelist(email string) (*string, error)
+	DeleteUserFromWhitelistByID(id string) (bool, error)
 
 	GetDeploymentByUUID(uuid string) (*models.Deployment, error)
 	GetDeploymentsFromUser(email string) ([]models.Deployment, error)

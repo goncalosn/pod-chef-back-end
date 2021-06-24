@@ -30,7 +30,6 @@ func (repo *KubernetesRepository) GetNodeByName(name string) (interface{}, error
 	//verify if there is an error and then what kind of error it is
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		//node not found
-		log.Error(err)
 		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "Node not found"}
 	} else if err != nil {
 		log.Error(err)

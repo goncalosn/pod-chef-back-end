@@ -75,6 +75,8 @@ func (srv *Service) CreateDeployment(email string, role string, replicas *int32,
 
 	srv.mongoRepository.InsertDeployment(appUUID, email, image)
 	if err != nil {
+		//delete namespace
+		_, _ = srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
 		//return error from the mongo repository method
 		return nil, err
 	}
