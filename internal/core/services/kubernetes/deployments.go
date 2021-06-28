@@ -8,9 +8,9 @@ import (
 )
 
 //CreateDeployment service responsible for creating a deployment inside a new namespace
-func (srv *Service) CreateDeployment(email string, role string, replicas *int32, image string) (interface{}, error) {
+func (srv *Service) CreateDeployment(id string, role string, replicas *int32, image string) (interface{}, error) {
 	//check the number os deployments by the user
-	deployments, err := srv.mongoRepository.GetDeploymentsFromUser(email)
+	deployments, err := srv.mongoRepository.GetDeploymentsFromUser(id)
 
 	if err != nil {
 		//return the error sent by the repository
@@ -73,7 +73,7 @@ func (srv *Service) CreateDeployment(email string, role string, replicas *int32,
 		return nil, err
 	}
 
-	srv.mongoRepository.InsertDeployment(appUUID, email, image)
+	srv.mongoRepository.InsertDeployment(appUUID, id, image)
 	if err != nil {
 		//delete namespace
 		_, _ = srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
@@ -86,9 +86,9 @@ func (srv *Service) CreateDeployment(email string, role string, replicas *int32,
 }
 
 //GetDeploymentsByUser service responsible for getting all deployments inside a namespace
-func (srv *Service) GetDeploymentsByUser(email string) (interface{}, error) {
+func (srv *Service) GetDeploymentsByUser(id string) (interface{}, error) {
 	//call driven adapter responsible for getting all deployments from database
-	response, err := srv.mongoRepository.GetDeploymentsFromUser(email)
+	response, err := srv.mongoRepository.GetDeploymentsFromUser(id)
 
 	if err != nil {
 		//return the error sent by the repository
@@ -99,7 +99,7 @@ func (srv *Service) GetDeploymentsByUser(email string) (interface{}, error) {
 }
 
 //GetDeploymentByUserAndName service responsible for getting a deployment
-func (srv *Service) GetDeploymentByUserAndName(email string, uuid string) (interface{}, error) {
+func (srv *Service) GetDeploymentByUserAndName(id string, uuid string) (interface{}, error) {
 	//call driven adapter responsible for getting a deployment from the database
 	response, err := srv.mongoRepository.GetDeploymentByUUID(uuid)
 
@@ -109,7 +109,7 @@ func (srv *Service) GetDeploymentByUserAndName(email string, uuid string) (inter
 	}
 
 	//verify if the user requesting the deployment, it's the deployment's creator
-	if email != response.User {
+	if id != response.User {
 		//return a custom error
 		return nil, &pkg.Error{Err: err, Code: http.StatusForbidden, Message: "Cannot get another user's deployment"}
 	}
@@ -118,7 +118,7 @@ func (srv *Service) GetDeploymentByUserAndName(email string, uuid string) (inter
 }
 
 //DeleteDeploymentByUserAndUUID service responsible for deleting a deployment
-func (srv *Service) DeleteDeploymentByUserAndUUID(email string, uuid string) (interface{}, error) {
+func (srv *Service) DeleteDeploymentByUserAndUUID(id string, uuid string) (interface{}, error) {
 
 	//call driven adapter responsible for getting a deployment from the database
 	deployment, err := srv.mongoRepository.GetDeploymentByUUID(uuid)
@@ -129,7 +129,7 @@ func (srv *Service) DeleteDeploymentByUserAndUUID(email string, uuid string) (in
 	}
 
 	//verify if the user deleting the deployment, it's the deployment's creator
-	if email != deployment.User {
+	if id != deployment.User {
 		//return a custom error
 		return nil, &pkg.Error{Err: err, Code: http.StatusForbidden, Message: "Cannot delete another user's deployment"}
 	}

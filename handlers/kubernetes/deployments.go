@@ -32,7 +32,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 	role := claims["role"].(string)
 
 	//parsing replicas to int64
@@ -49,7 +49,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	replicasI32 := int32(replicasI64)
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.kubernetesServices.CreateDeployment(email, role, &replicasI32, data.Image)
+	response, err := h.kubernetesServices.CreateDeployment(id, role, &replicasI32, data.Image)
 	if err != nil {
 		//type assertion of custom Error to default error
 		kubernetesError := err.(*pkg.Error)
@@ -66,10 +66,10 @@ func (h *HTTPHandler) getMyDeployments(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 
 	//call driver adapter responsible for getting the deployments from the mongo database
-	response, err := h.kubernetesServices.GetDeploymentsByUser(email)
+	response, err := h.kubernetesServices.GetDeploymentsByUser(id)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -86,7 +86,7 @@ func (h *HTTPHandler) getMyDeployments(c echo.Context) error {
 func (h *HTTPHandler) getDeploymentsByUser(c echo.Context) error {
 	//body structure
 	type body struct {
-		Email string `json:"email"`
+		User string `json:"user"`
 	}
 
 	data := new(body)
@@ -96,12 +96,12 @@ func (h *HTTPHandler) getDeploymentsByUser(c echo.Context) error {
 	}
 
 	//checking data for empty values
-	if data.Email == "" {
+	if data.User == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
 
 	//call driver adapter responsible for getting the deployments from the mongo database
-	response, err := h.kubernetesServices.GetDeploymentsByUser(data.Email)
+	response, err := h.kubernetesServices.GetDeploymentsByUser(data.User)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -135,10 +135,10 @@ func (h *HTTPHandler) getDeploymentByUserAndName(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 
 	//call driver adapter responsible for getting a deployment from the mongo database
-	response, err := h.kubernetesServices.GetDeploymentByUserAndName(email, data.Name)
+	response, err := h.kubernetesServices.GetDeploymentByUserAndName(id, data.Name)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -172,10 +172,10 @@ func (h *HTTPHandler) deleteDeploymentByUserAndName(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 
 	//call driver adapter responsible for getting a deployment from the mongo database
-	response, err := h.kubernetesServices.DeleteDeploymentByUserAndUUID(email, data.Name)
+	response, err := h.kubernetesServices.DeleteDeploymentByUserAndUUID(id, data.Name)
 
 	if err != nil {
 		//type assertion of custom Error to default error

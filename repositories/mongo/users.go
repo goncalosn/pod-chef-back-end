@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"net/http"
+	"time"
 
 	models "pod-chef-back-end/internal/core/domain/mongo"
 	"pod-chef-back-end/pkg"
@@ -30,7 +31,7 @@ func (repo *MongoRepository) GetUserByEmail(email string) (*models.User, error) 
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -49,11 +50,10 @@ func (repo *MongoRepository) GetUserByID(id string) (*models.User, error) {
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
-
 	hexID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		//return a custom error
-		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	//data to filter the search with
@@ -64,7 +64,7 @@ func (repo *MongoRepository) GetUserByID(id string) (*models.User, error) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -123,13 +123,14 @@ func (repo *MongoRepository) InsertUser(email string, hash string, name string, 
 		Hash:  hash,
 		Name:  name,
 		Role:  role,
+		Date:  time.Now().UTC(),
 	}
 
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
 
 	//insert user with bson because of automatic id generator
-	_, err := collection.InsertOne(context.Background(), bson.M{"email": email, "hash": hash, "name": name, "role": role})
+	hex, err := collection.InsertOne(context.Background(), bson.M{"email": email, "hash": hash, "name": name, "role": role, "date": time.Now().UTC()})
 
 	if err != nil {
 		//print the error stack
@@ -139,6 +140,7 @@ func (repo *MongoRepository) InsertUser(email string, hash string, name string, 
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
+	user.ID = hex.InsertedID.(primitive.ObjectID).Hex()
 	return user, nil
 }
 
@@ -175,15 +177,21 @@ func (repo *MongoRepository) UpdateUserPassword(id string, hash string) (bool, e
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
 
+	hexID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+	}
+
 	//data to filter with
-	filter := bson.D{{"id", id}}
+	filter := bson.M{"_id": hexID}
 	//data to update
 	update := bson.D{
 		{"$set", bson.D{{"hash", hash}}},
 	}
 
 	//call driven adapter responsible for updating a fild  from the database
-	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	_, err = collection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -205,15 +213,21 @@ func (repo *MongoRepository) UpdateUserRole(id string, role string) (bool, error
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
 
+	hexID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+	}
+
 	//data to filter with
-	filter := bson.D{{"id", id}}
+	filter := bson.M{"_id": hexID}
 	//data to update
 	update := bson.D{
 		{"$set", bson.D{{"role", role}}},
 	}
 
 	//call driven adapter responsible for updating a fild  from the database
-	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	_, err = collection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -235,15 +249,22 @@ func (repo *MongoRepository) UpdateUserName(id string, name string) (bool, error
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("users")
 
+	hexID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+	}
+
 	//data to filter with
-	filter := bson.D{{"id", id}}
+	filter := bson.M{"_id": hexID}
+
 	//data to update
 	update := bson.D{
 		{"$set", bson.D{{"name", name}}},
 	}
 
 	//call driven adapter responsible for updating a fild  from the database
-	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	_, err = collection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

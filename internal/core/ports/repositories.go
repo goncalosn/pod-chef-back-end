@@ -43,9 +43,10 @@ type MongoRepository interface {
 	GetAllUsersFromWhitelist() ([]models.WhitelistUser, error)
 	InsertUserIntoWhitelist(email string) (*string, error)
 	DeleteUserFromWhitelistByID(id string) (bool, error)
+	DeleteUserFromWhitelistByEmail(email string) (bool, error)
 
 	GetDeploymentByUUID(uuid string) (*models.Deployment, error)
-	GetDeploymentsFromUser(email string) ([]models.Deployment, error)
+	GetDeploymentsFromUser(id string) ([]models.Deployment, error)
 	InsertDeployment(uuid string, email string, image string) (bool, error)
 	DeleteDeploymentByUUID(uuid string) (bool, error)
 }

@@ -11,10 +11,10 @@ type KubernetesServices interface {
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(email string, role string, replicas *int32, image string) (interface{}, error)
-	GetDeploymentsByUser(email string) (interface{}, error)
-	GetDeploymentByUserAndName(email string, name string) (interface{}, error)
-	DeleteDeploymentByUserAndUUID(email string, uuid string) (interface{}, error)
+	CreateDeployment(id string, role string, replicas *int32, image string) (interface{}, error)
+	GetDeploymentsByUser(id string) (interface{}, error)
+	GetDeploymentByUserAndName(id string, name string) (interface{}, error)
+	DeleteDeploymentByUserAndUUID(id string, uuid string) (interface{}, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
@@ -33,13 +33,13 @@ type MongoServices interface {
 	GetUserByEmail(email string) (*models.User, error)
 	GetAllUsers() (*[]models.User, error)
 	InsertUser(email string, password string, name string) (*models.User, error)
-	DeleteUser(name string) (bool, error)
-	UpdateSelfPassword(email string, hash string) (bool, error)
-	ResetUserPassword(to string, password string) (bool, error)
-	UpdateUserRole(id string, role string) (bool, error)
-	UpdateUserName(id string, name string) (bool, error)
+	DeleteUser(name string) (*string, error)
+	UpdateUserPassword(id string, password string) (*string, error)
+	ResetUserPassword(id string, password string) (*string, error)
+	UpdateUserRole(id string, role string) (*string, error)
+	UpdateUserName(id string, name string) (*string, error)
 
 	GetAllUsersFromWhitelist() (*[]models.WhitelistUser, error)
-	InsertUserIntoWhitelist(to string) (bool, error)
-	RemoveUserFromWhitelist(id string) (bool, error)
+	InsertUserIntoWhitelist(to string) (*string, error)
+	RemoveUserFromWhitelist(id string) (*string, error)
 }

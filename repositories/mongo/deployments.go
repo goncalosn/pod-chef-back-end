@@ -44,7 +44,7 @@ func (repo *MongoRepository) GetDeploymentByUUID(uuid string) (*models.Deploymen
 }
 
 //GetDeploymentsFromUser method responsible for getting deployment
-func (repo *MongoRepository) GetDeploymentsFromUser(email string) ([]models.Deployment, error) {
+func (repo *MongoRepository) GetDeploymentsFromUser(id string) ([]models.Deployment, error) {
 	//data structure to where the data will be written to
 	var deployments []models.Deployment
 
@@ -52,7 +52,7 @@ func (repo *MongoRepository) GetDeploymentsFromUser(email string) ([]models.Depl
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter the search with
-	filter := bson.D{{"user", email}}
+	filter := bson.D{{"user", id}}
 
 	//call driven adapter responsible for getting a deployment's data from the database to a cursor
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "user": 0}})

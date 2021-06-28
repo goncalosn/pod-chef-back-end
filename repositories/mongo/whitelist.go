@@ -29,7 +29,7 @@ func (repo *MongoRepository) GetUserFromWhitelistByEmail(email string) (*models.
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found in whitelist"}
 		}
 		//print the error stack
 		log.Error(err)
@@ -113,7 +113,7 @@ func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (*string, err
 	//data structure containing the data to be inserted
 	user := models.WhitelistUser{
 		Email: email,
-		Data:  time.Now().UTC(),
+		Date:  time.Now().UTC(),
 	}
 
 	//choose the database and collection
@@ -129,7 +129,7 @@ func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (*string, err
 		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
-	id := hex.InsertedID.(primitive.ObjectID).String()
+	id := hex.InsertedID.(primitive.ObjectID).Hex()
 
 	return &id, nil
 }
@@ -142,7 +142,7 @@ func (repo *MongoRepository) DeleteUserFromWhitelistByID(id string) (bool, error
 	hexID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		//return a custom error
-		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
 	}
 
 	//data to filter with
@@ -150,6 +150,28 @@ func (repo *MongoRepository) DeleteUserFromWhitelistByID(id string) (bool, error
 
 	//call driven adapter responsible for deleting a user from the database
 	_, err = collection.DeleteOne(context.TODO(), filter)
+
+	if err != nil {
+		//print the error stack
+		log.Error(err)
+
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	return true, nil
+}
+
+//DeleteUserFromWhitelistByEmail method responsible for deleting a user
+func (repo *MongoRepository) DeleteUserFromWhitelistByEmail(email string) (bool, error) {
+	//choose the database and collection
+	collection := repo.Client.Database("podchef").Collection("whitelist")
+
+	//data to filter with
+	filter := bson.M{"email": email}
+
+	//call driven adapter responsible for deleting a user from the database
+	_, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
 		//print the error stack

@@ -21,12 +21,12 @@ func (h *HTTPHandler) login(c echo.Context) error {
 	data := new(body)
 
 	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Incomplete request"})
 	}
 
 	//checking data for empty values
 	if data.Email == "" || data.Password == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Request with empty values"})
 	}
 
 	//call driver adapter responsible for getting the user from the database
@@ -40,12 +40,12 @@ func (h *HTTPHandler) login(c echo.Context) error {
 		return c.JSON(mongoError.Code, mongoError)
 
 	} else if user == nil { //user doesn't exist
-		return c.JSON(http.StatusNotFound, map[string]string{"message": "Not found"})
+		return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
 	} else { //user exists, verify user's password with a hash of the one sent
 		//compare hashes
 		if !pkg.ComparePasswords(user.Hash, data.Password) {
 			//wrong password
-			return c.JSON(http.StatusNotFound, map[string]string{"message": "Not found"})
+			return c.JSON(http.StatusNotFound, map[string]string{"message": "User not found"})
 		}
 	}
 
@@ -73,12 +73,12 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	data := new(body)
 
 	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Incomplete request"})
 	}
 
 	//checking data for empty values
 	if data.Email == "" || data.Password == "" || data.Name == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Request with empty values"})
 	}
 
 	//verify email lenght
@@ -120,6 +120,59 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	}
 
 	return c.JSONPretty(http.StatusOK, token, " ")
+}
+
+//getUser get user by id from th database
+func (h *HTTPHandler) getUser(c echo.Context) error {
+	//body structure
+	type body struct {
+		ID string `json:"id"`
+	}
+
+	data := new(body)
+
+	if err := c.Bind(data); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Incomplete request"})
+	}
+
+	//checking data for empty values
+	if data.ID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Request with empty values"})
+	}
+
+	//call driver adapter responsible for getting a user from the database
+	response, err := h.mongoServices.GetUserByID(data.ID)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
+}
+
+//getUser get user by id from th database
+func (h *HTTPHandler) getUserProfile(c echo.Context) error {
+	//get the token's claims
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	//call driver adapter responsible for getting a user from the database
+	response, err := h.mongoServices.GetUserByID(id)
+
+	if err != nil {
+		//type assertion of custom Error to default error
+		mongoError := err.(*pkg.Error)
+
+		//return the error sent by the service
+		return c.JSON(mongoError.Code, mongoError)
+	}
+
+	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
 //getAllUsers get all the users from the database
@@ -179,8 +232,8 @@ func (h *HTTPHandler) deleteUser(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-//updateSelfPassword update password
-func (h *HTTPHandler) updateSelfPassword(c echo.Context) error {
+//updateOwnPassword update password
+func (h *HTTPHandler) updateOwnPassword(c echo.Context) error {
 	//body structure
 	type body struct {
 		Password string `json:"password"`
@@ -200,11 +253,11 @@ func (h *HTTPHandler) updateSelfPassword(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 
 	crypt := pkg.EncryptPassword(data.Password)
 	//call driver adapter responsible for updating a user's password from the database
-	response, err := h.mongoServices.UpdateSelfPassword(email, string(crypt))
+	response, err := h.mongoServices.UpdateUserPassword(id, string(crypt))
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -239,7 +292,7 @@ func (h *HTTPHandler) resetPassword(c echo.Context) error {
 	generated := pkg.GeneratePassword()
 
 	//call driver adapter responsible for reseting a user's password
-	response, err := h.mongoServices.ResetUserPassword(data.ID, generated)
+	response, err := h.mongoServices.UpdateUserPassword(data.ID, generated)
 
 	if err != nil {
 		//type assertion of custom Error to default error
@@ -252,8 +305,8 @@ func (h *HTTPHandler) resetPassword(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, response, " ")
 }
 
-//updateSelfName update name
-func (h *HTTPHandler) updateSelfName(c echo.Context) error {
+//updateOwnName update name
+func (h *HTTPHandler) updateOwnName(c echo.Context) error {
 	//body structure
 	type body struct {
 		Name string `json:"name"`
@@ -273,10 +326,10 @@ func (h *HTTPHandler) updateSelfName(c echo.Context) error {
 	//get the token's claims
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	email := claims["email"].(string)
+	id := claims["id"].(string)
 
 	//call driver adapter responsible for updating a user's name from the database
-	response, err := h.mongoServices.UpdateUserName(email, data.Name)
+	response, err := h.mongoServices.UpdateUserName(id, data.Name)
 
 	if err != nil {
 		//type assertion of custom Error to default error
