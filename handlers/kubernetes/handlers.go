@@ -28,7 +28,7 @@ func Handlers(e *echo.Echo, handler *HTTPHandler, isLoggedIn echo.MiddlewareFunc
 	e.POST("/deployment", handler.createDeployment, isLoggedIn)
 	e.GET("/my-deployments", handler.getMyDeployments, isLoggedIn)
 	// e.GET("/deployments", handler.getAllDeployments, isLoggedIn)
-	e.POST("/deployments", handler.getDeploymentsByUser, isLoggedIn, pkg.IsAdmin)
+	e.POST("/user/deployments", handler.getDeploymentsByUser, isLoggedIn, pkg.IsAdmin)
 	e.GET("/deployment", handler.getDeploymentByUserAndName, isLoggedIn)
 	e.DELETE("/deployment", handler.deleteDeploymentByUserAndName, isLoggedIn)
 }

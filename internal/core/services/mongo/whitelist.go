@@ -21,7 +21,7 @@ func (srv *Service) GetAllUsersFromWhitelist() (*[]models.WhitelistUser, error) 
 }
 
 //InsertUserIntoWhitelist service responsible for deleting a user from the database
-func (srv *Service) InsertUserIntoWhitelist(to string) (bool, error) {
+func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 	data := &email.Email{
 		SenderName: "Pod Chef team",
 		Subject:    "You have been added to the Pod Chef whitelist!",
@@ -30,39 +30,40 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (bool, error) {
 	//verify if user exists
 	user, err := srv.mongoRepository.GetUserFromWhitelistByEmail(to)
 	if err != nil {
-		mongoError := err.(*pkg.Error)
-		if mongoError.Code != http.StatusNotFound {
-			return false, err
+		if mongoError := err.(*pkg.Error); mongoError.Code != http.StatusNotFound {
+			return nil, err
 		}
 	}
 
 	if user != nil {
 		//return a custom error
-		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User already invited"}
+		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User already invited"}
 	}
 
 	//add user to whitelist
 	id, err := srv.mongoRepository.InsertUserIntoWhitelist(to)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	//call driven adapter responsible for sending an email
-	response, err := srv.emailRepository.SendEmailSMTP(to, data, "invitation.txt")
+	_, err = srv.emailRepository.SendEmailSMTP(to, data, "invitation.txt")
 
 	if err != nil { //transaction
 		//delete user from whitelist
 		_, err = srv.mongoRepository.DeleteUserFromWhitelistByID(*id)
 
 		//return the error sent by the repository
-		return false, err
+		return nil, err
 	}
 
-	return response, nil
+	message := "User invited sucessfully"
+
+	return &message, nil
 }
 
 //RemoveUserFromWhitelist service responsible for deleting a user from the database
-func (srv *Service) RemoveUserFromWhitelist(id string) (bool, error) {
+func (srv *Service) RemoveUserFromWhitelist(id string) (*string, error) {
 	data := &email.Email{
 		SenderName: "Pod Chef team",
 		Subject:    "You have been removed from the Pod Chef whitelist!",
@@ -71,30 +72,24 @@ func (srv *Service) RemoveUserFromWhitelist(id string) (bool, error) {
 	//verify if user exists
 	user, err := srv.mongoRepository.GetUserFromWhitelistByID(id)
 	if err != nil {
-		mongoError := err.(*pkg.Error)
-		if mongoError.Code != http.StatusNotFound {
-			return false, err
-		}
-	}
-
-	if user == nil {
-		//return a custom error
-		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
+		return nil, err
 	}
 
 	//delete user from whitelist
 	_, err = srv.mongoRepository.DeleteUserFromWhitelistByID(id)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	//call driven adapter responsible for sending an email
-	response, err := srv.emailRepository.SendEmailSMTP(user.Email, data, "annulment.txt")
+	_, err = srv.emailRepository.SendEmailSMTP(user.Email, data, "annulment.txt")
 
 	if err != nil {
 		//return the error sent by the repository
-		return false, err
+		return nil, err
 	}
 
-	return response, nil
+	message := "User removed from whitelist"
+
+	return &message, nil
 }
