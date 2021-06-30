@@ -3,6 +3,7 @@ package mongo
 import (
 	"net/http"
 	"pod-chef-back-end/pkg"
+	"regexp"
 
 	echo "github.com/labstack/echo/v4"
 )
@@ -35,9 +36,17 @@ func (h *HTTPHandler) inviteUserToWhitelist(c echo.Context) error {
 	if err := c.Bind(data); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
 	}
-	//checking data for empty values
-	if data.Email == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+
+	//verify email lenght
+	if len(data.Email) < 3 && len(data.Email) > 254 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Email not valid"})
+	}
+
+	var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+	//validate email
+	if !emailRegex.MatchString(data.Email) {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Email not valid"})
 	}
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
