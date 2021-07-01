@@ -15,7 +15,7 @@ import (
 )
 
 //GenerateJWT service responsible for generating a token
-func GenerateJWT(viper *viper.Viper, name string, email string, role string, id string) (interface{}, error) {
+func GenerateJWT(viper *viper.Viper, name string, email string, role string, id string, date time.Time) (interface{}, error) {
 	// Create token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -25,6 +25,7 @@ func GenerateJWT(viper *viper.Viper, name string, email string, role string, id 
 	claims["email"] = email
 	claims["role"] = role
 	claims["id"] = id
+	claims["date"] = date
 	claims["exp"] = time.Now().UTC().Add(time.Hour * 72).Unix()
 
 	secret := viper.Get("TOKEN_SECRET").(string)
