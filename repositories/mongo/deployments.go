@@ -52,11 +52,12 @@ func (repo *MongoRepository) GetDeploymentsFromUser(id string) ([]models.Deploym
 	collection := repo.Client.Database("podchef").Collection("deployments")
 
 	//data to filter the search with
-	filter := bson.D{{"user", id}}
+	filter := bson.M{"user": id}
 
 	//call driven adapter responsible for getting a deployment's data from the database to a cursor
 	cur, err := collection.Find(context.Background(), filter, &options.FindOptions{Projection: bson.M{"_id": 0, "user": 0}})
 
+	// this somehow doesnt work
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No deployments were found"}

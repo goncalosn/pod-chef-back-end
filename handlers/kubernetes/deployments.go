@@ -3,30 +3,36 @@ package kubernetes
 import (
 	"net/http"
 	pkg "pod-chef-back-end/pkg"
-	"strconv"
+	"regexp"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 //createDeployment create a deployment with the given image and replicas
 func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	//body structure
 	type body struct {
-		Replicas string `json:"replicas"`
+		Name     string `json:"name"`
+		Replicas int    `json:"replicas"`
 		Image    string `json:"image"`
 	}
 
 	data := new(body)
 
 	if err := c.Bind(data); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Error binding json"})
 	}
 
 	//checking data for empty values
-	if data.Replicas == "" || data.Image == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
+	if data.Name == "" || data.Replicas < 1 || data.Replicas > 6 || data.Image == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid json request"})
+	}
+
+	nameRegex := regexp.MustCompile("[-a-zA-Z0-9]{1,24}")
+
+	if !nameRegex.Match([]byte(data.Name)) {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid application name"})
 	}
 
 	//get the token's claims
@@ -35,21 +41,11 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	id := claims["id"].(string)
 	role := claims["role"].(string)
 
-	//parsing replicas to int64
-	replicasI64, err := strconv.ParseInt(data.Replicas, 10, 32)
-	if err != nil {
-		log.Error(err)
-
-		//error parsing data, as it contained data other than numbers
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid request"})
-
-	}
-
 	//parse replicas to int32
-	replicasI32 := int32(replicasI64)
+	replicasI32 := int32(data.Replicas)
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.kubernetesServices.CreateDeployment(id, role, &replicasI32, data.Image)
+	response, err := h.kubernetesServices.CreateDeployment(id, role, data.Name, &replicasI32, data.Image)
 	if err != nil {
 		//type assertion of custom Error to default error
 		kubernetesError := err.(*pkg.Error)

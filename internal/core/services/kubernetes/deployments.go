@@ -3,12 +3,10 @@ package kubernetes
 import (
 	"net/http"
 	"pod-chef-back-end/pkg"
-
-	uuid "github.com/satori/go.uuid"
 )
 
 //CreateDeployment service responsible for creating a deployment inside a new namespace
-func (srv *Service) CreateDeployment(id string, role string, replicas *int32, image string) (interface{}, error) {
+func (srv *Service) CreateDeployment(id string, role string, deployName string, replicas *int32, image string) (interface{}, error) {
 	//check the number os deployments by the user
 	deployments, err := srv.mongoRepository.GetDeploymentsFromUser(id)
 
@@ -25,9 +23,7 @@ func (srv *Service) CreateDeployment(id string, role string, replicas *int32, im
 		}
 	}
 
-	appUUID := uuid.NewV4().String() //generate uuid for this deployment
-
-	namespaceUUID := "namespace-" + appUUID //generate name for namespace
+	namespaceUUID := "namespace-" + deployName //generate name for namespace
 
 	//call driven adapter responsible for creating namespaces inside the kubernetes cluster
 	_, err = srv.kubernetesRepository.CreateNamespace(namespaceUUID)
@@ -36,7 +32,7 @@ func (srv *Service) CreateDeployment(id string, role string, replicas *int32, im
 		return nil, err
 	}
 
-	deploymentUUID := "deployment-" + appUUID //generate name for the deployment
+	deploymentUUID := "deployment-" + deployName //generate name for the deployment
 
 	//call driven adapter responsible for creating deployments inside the kubernetes cluster
 	_, err = srv.kubernetesRepository.CreateDeployment(namespaceUUID, deploymentUUID, replicas, image)
@@ -49,40 +45,47 @@ func (srv *Service) CreateDeployment(id string, role string, replicas *int32, im
 		return nil, err
 	}
 
-	serviceUUID := "service-" + appUUID //generate name for the service
+	serviceUUID := "service-" + deployName //generate name for the service
 	//create service to expose the deployment
 	_, err = srv.kubernetesRepository.CreateClusterIPService(namespaceUUID, serviceUUID)
 	if err != nil {
 		//creation of the service went wrong, delete everything inside it's namespace
 		//call driven adapter responsible for deleting namespaces inside the kubernetes cluster
-		_, _ = srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
-
+		_, deperr := srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
+		if deperr != nil {
+			return nil, deperr
+		}
 		//return error from the kubernetes repository method
 		return nil, err
 	}
 
-	ingressUUID := "ingress-" + appUUID //generate name for the service
+	ingressUUID := "ingress-" + deployName //generate name for the service
 	//create ingress to expose the service
-	_, err = srv.kubernetesRepository.CreateIngress(namespaceUUID, ingressUUID, appUUID)
+	_, err = srv.kubernetesRepository.CreateIngress(namespaceUUID, ingressUUID, deployName)
 	if err != nil {
 		//creation of the ingress went wrong, delete everything inside it's namespace
 		//call driven adapter responsible for deleting namespaces inside the kubernetes cluster
-		_, _ = srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
-
+		_, deperr := srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
+		if deperr != nil {
+			return nil, deperr
+		}
 		//return error from the kubernetes repository method
 		return nil, err
 	}
 
-	srv.mongoRepository.InsertDeployment(appUUID, id, image)
+	srv.mongoRepository.InsertDeployment(deployName, id, image)
 	if err != nil {
 		//delete namespace
-		_, _ = srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
+		_, deperr := srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
+		if deperr != nil {
+			return nil, deperr
+		}
 		//return error from the mongo repository method
 		return nil, err
 	}
 
 	//return app uuid
-	return appUUID, err
+	return deployName, nil
 }
 
 //GetDeploymentsByUser service responsible for getting all deployments inside a namespace
