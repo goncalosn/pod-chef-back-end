@@ -28,7 +28,7 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 	}
 
 	//verify if user exists
-	user, err := srv.mongoRepository.GetUserFromWhitelistByEmail(to)
+	user, err := srv.mongoRepository.GetUserByEmail(to)
 	if err != nil {
 		if mongoError := err.(*pkg.Error); mongoError.Code != http.StatusNotFound {
 			return nil, err
@@ -36,6 +36,19 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 	}
 
 	if user != nil {
+		//return a custom error
+		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "A user with this email already exists"}
+	}
+
+	//verify if user is already invited
+	invited, err := srv.mongoRepository.GetUserFromWhitelistByEmail(to)
+	if err != nil {
+		if mongoError := err.(*pkg.Error); mongoError.Code != http.StatusNotFound {
+			return nil, err
+		}
+	}
+
+	if invited != nil {
 		//return a custom error
 		return nil, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User already invited"}
 	}

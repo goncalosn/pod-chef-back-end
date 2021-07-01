@@ -49,7 +49,7 @@ func (h *HTTPHandler) login(c echo.Context) error {
 		}
 	}
 
-	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID)
+	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID, user.Date)
 	if err != nil {
 		//type assertion of custom Error to default error
 		tokenError := err.(*pkg.Error)
@@ -110,7 +110,7 @@ func (h *HTTPHandler) signup(c echo.Context) error {
 	}
 
 	// generate json web token
-	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID)
+	token, err := pkg.GenerateJWT(h.viper, user.Name, user.Email, user.Role, user.ID, user.Date)
 	if err != nil {
 		//type assertion of custom Error to default error
 		tokenError := err.(*pkg.Error)

@@ -49,11 +49,17 @@ func (repo *MongoRepository) GetUserFromWhitelistByID(id string) (*models.Whitel
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("whitelist")
 
-	//data to filter the search with
-	filter := bson.M{"id": id}
+	hexID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		//return a custom error
+		return nil, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	//data to filter with
+	filter := bson.M{"_id": hexID}
 
 	//call driven adapter responsible for getting a user data from the database
-	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	err = collection.FindOne(context.Background(), filter).Decode(&user)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -110,17 +116,11 @@ func (repo *MongoRepository) GetAllUsersFromWhitelist() ([]models.WhitelistUser,
 
 //InsertUserIntoWhitelist method responsible for inserting a user in the database
 func (repo *MongoRepository) InsertUserIntoWhitelist(email string) (*string, error) {
-	//data structure containing the data to be inserted
-	user := models.WhitelistUser{
-		Email: email,
-		Date:  time.Now().UTC(),
-	}
-
 	//choose the database and collection
 	collection := repo.Client.Database("podchef").Collection("whitelist")
 
 	//call driven adapter responsible for inserting a user into the database
-	hex, err := collection.InsertOne(context.Background(), user)
+	hex, err := collection.InsertOne(context.Background(), bson.M{"email": email, "date": time.Now().UTC()})
 	if err != nil {
 		//print the error stack
 		log.Error(err)
