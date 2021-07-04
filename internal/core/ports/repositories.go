@@ -55,3 +55,9 @@ type MongoRepository interface {
 type EmailRepository interface {
 	SendEmailSMTP(to string, data *email.Email, template string) (bool, error)
 }
+
+//CloudflareRepository interface holding all the cloudflare repository methods
+type CloudflareRepository interface {
+	AddSubDomainName(name string) (bool, error)
+	DeleteSubDomainName(name string) (bool, error)
+}

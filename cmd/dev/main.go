@@ -13,6 +13,7 @@ import (
 	mongoHandlers "pod-chef-back-end/handlers/mongo"
 	kubernetesServices "pod-chef-back-end/internal/core/services/kubernetes"
 	mongoServices "pod-chef-back-end/internal/core/services/mongo"
+	cloudflareRepo "pod-chef-back-end/repositories/cloudflare"
 	emailRepo "pod-chef-back-end/repositories/email"
 	kubernetesRepo "pod-chef-back-end/repositories/kubernetes"
 	mongoRepo "pod-chef-back-end/repositories/mongo"
@@ -50,9 +51,12 @@ func main() {
 	mongoRepository := mongoRepo.NewMongoRepository(viper.GetViper())
 	mongoService := mongoServices.NewMongoService(mongoRepository, emailRepository)
 
+	//initalize cloudflare client
+	cloudflareRepository := cloudflareRepo.NewCloudflareRepository(viper.GetViper())
+
 	//initalize kubernetes access configurations
 	kubernetesRepository := kubernetesRepo.NewKubernetesDevClient()
-	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository)
+	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository, cloudflareRepository)
 
 	//initialize the kubernetes http handlers
 	kubernetesHandler := kubernetesHandlers.NewHTTPHandler(kubernetesService)

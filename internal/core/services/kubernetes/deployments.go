@@ -84,6 +84,18 @@ func (srv *Service) CreateDeployment(id string, role string, deployName string, 
 		return nil, err
 	}
 
+	_, err = srv.cloudflareRepository.AddSubDomainName(deployName)
+
+	if err != nil {
+		_, deperr := srv.kubernetesRepository.DeleteNamespace(namespaceUUID)
+		if deperr != nil {
+			return nil, deperr
+		}
+
+		//return the error sent by the repository
+		return nil, err
+	}
+
 	//return app uuid
 	return deployName, nil
 }
