@@ -7,8 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//getNodeByName get node by name from the kubenretes cluster
-func (h *HTTPHandler) getNodeByName(c echo.Context) error {
+//getNode get node by name from the kubenretes cluster
+func (h *HTTPHandler) getNode(c echo.Context) error {
 	//body structure
 	type body struct {
 		Node string `json:"node"`

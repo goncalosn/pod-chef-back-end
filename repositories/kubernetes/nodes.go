@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/gommon/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -17,11 +16,11 @@ import (
 func (repo *KubernetesRepository) GetNodeByName(name string) (interface{}, error) {
 	//data structure which will be returned
 	type Node struct {
-		Name            string
-		MaxPods         *resource.Quantity
-		AllocatablePods *resource.Quantity
-		Conditions      []interface{}
-		CreatedAt       metav1.Time
+		Name       string
+		Allocable  map[string]interface{}
+		Capacity   map[string]interface{}
+		Conditions []interface{}
+		CreatedAt  metav1.Time
 	}
 
 	//list the node from the pool with the given name
@@ -59,11 +58,21 @@ func (repo *KubernetesRepository) GetNodeByName(name string) (interface{}, error
 
 	//adds the node to the response
 	response := &Node{
-		Name:            node.Name,
-		MaxPods:         node.Status.Capacity.Pods(),
-		AllocatablePods: node.Status.Allocatable.Pods(),
-		Conditions:      conditions,
-		CreatedAt:       node.GetCreationTimestamp(),
+		Name: node.Name,
+		Allocable: map[string]interface{}{
+			"Cpu":     node.Status.Allocatable.Cpu(),
+			"Memory":  node.Status.Allocatable.Memory().AsApproximateFloat64(),
+			"Storage": node.Status.Allocatable.StorageEphemeral().AsApproximateFloat64(),
+			"Pods":    node.Status.Allocatable.Pods(),
+		},
+		Capacity: map[string]interface{}{
+			"Cpu":     node.Status.Capacity.Cpu(),
+			"Memory":  node.Status.Capacity.Memory().AsApproximateFloat64(),
+			"Storage": node.Status.Capacity.StorageEphemeral().AsApproximateFloat64(),
+			"Pods":    node.Status.Capacity.Pods(),
+		},
+		Conditions: conditions,
+		CreatedAt:  node.GetCreationTimestamp(),
 	}
 
 	return response, nil

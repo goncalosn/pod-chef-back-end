@@ -88,6 +88,19 @@ func (srv *Service) CreateDeployment(id string, role string, deployName string, 
 	return deployName, nil
 }
 
+//GetAllDeployments service responsible for getting all deployments inside a namespace
+func (srv *Service) GetAllDeployments() (interface{}, error) {
+	//call driven adapter responsible for getting all deployments from database
+	response, err := srv.mongoRepository.GetAllDeployments()
+
+	if err != nil {
+		//return the error sent by the repository
+		return nil, err
+	}
+
+	return response, nil
+}
+
 //GetDeploymentsByUser service responsible for getting all deployments inside a namespace
 func (srv *Service) GetDeploymentsByUser(id string) (interface{}, error) {
 	//call driven adapter responsible for getting all deployments from database
@@ -121,7 +134,7 @@ func (srv *Service) GetDeploymentByUserAndName(id string, uuid string) (interfac
 }
 
 //DeleteDeploymentByUserAndUUID service responsible for deleting a deployment
-func (srv *Service) DeleteDeploymentByUserAndUUID(id string, uuid string) (interface{}, error) {
+func (srv *Service) DeleteDeploymentByUserAndUUID(id string, uuid string) (*string, error) {
 
 	//call driven adapter responsible for getting a deployment from the database
 	deployment, err := srv.mongoRepository.GetDeploymentByUUID(uuid)
@@ -145,12 +158,14 @@ func (srv *Service) DeleteDeploymentByUserAndUUID(id string, uuid string) (inter
 	}
 
 	//call driven adapter responsible for getting a deployment from the database
-	response, err := srv.mongoRepository.DeleteDeploymentByUUID(uuid)
+	_, err = srv.mongoRepository.DeleteDeploymentByUUID(uuid)
 
 	if err != nil {
 		//return the error sent by the repository
 		return nil, err
 	}
 
-	return response, nil
+	message := "Deployment deleted sucessfully"
+
+	return &message, nil
 }

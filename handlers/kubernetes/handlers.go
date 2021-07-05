@@ -23,12 +23,12 @@ func NewHTTPHandler(kubernetesServices ports.KubernetesServices) *HTTPHandler {
 //Handlers contains containers every handler associated with kubernetes
 func Handlers(e *echo.Echo, handler *HTTPHandler, isLoggedIn echo.MiddlewareFunc) {
 	e.GET("/nodes", handler.getNodes, isLoggedIn, pkg.IsAdmin)
-	e.POST("/node", handler.getNodeByName, isLoggedIn, pkg.IsAdmin)
+	e.POST("/node", handler.getNode, isLoggedIn, pkg.IsAdmin)
 
 	e.POST("/deployment", handler.createDeployment, isLoggedIn)
 	e.GET("/my-deployments", handler.getMyDeployments, isLoggedIn)
-	// e.GET("/deployments", handler.getAllDeployments, isLoggedIn)
+	e.GET("/deployments", handler.getAllDeployments, isLoggedIn, pkg.IsAdmin)
 	e.POST("/user/deployments", handler.getDeploymentsByUser, isLoggedIn, pkg.IsAdmin)
 	e.GET("/deployment", handler.getDeploymentByUserAndName, isLoggedIn)
-	e.DELETE("/deployment", handler.deleteDeploymentByUserAndName, isLoggedIn)
+	e.DELETE("/deployment", handler.deleteDeploymentByUserAndID, isLoggedIn)
 }

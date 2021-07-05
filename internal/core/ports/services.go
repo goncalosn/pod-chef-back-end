@@ -12,9 +12,10 @@ type KubernetesServices interface {
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
 	CreateDeployment(id string, role string, deployName string, replicas *int32, image string) (interface{}, error)
+	GetAllDeployments() (interface{}, error)
 	GetDeploymentsByUser(id string) (interface{}, error)
 	GetDeploymentByUserAndName(id string, name string) (interface{}, error)
-	DeleteDeploymentByUserAndUUID(id string, uuid string) (interface{}, error)
+	DeleteDeploymentByUserAndUUID(id string, uuid string) (*string, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
