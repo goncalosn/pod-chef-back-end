@@ -29,7 +29,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid json request"})
 	}
 
-	nameRegex := regexp.MustCompile("[-a-zA-Z0-9]{1,24}")
+	nameRegex := regexp.MustCompile("[a-zA-Z0-9]{1,24}")
 
 	if !nameRegex.Match([]byte(data.Name)) {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid application name"})
