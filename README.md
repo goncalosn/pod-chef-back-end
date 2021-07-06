@@ -2,6 +2,25 @@
 
 API to serve the front-end side
 
+## .env example
+
+How to build a docker image for demo purposes
+
+```bash
+DB_USER="<username here>"
+DB_PASSWORD="<password here>"
+TOKEN_SECRET="<secret here>"
+CRYPT_KEY="<secret2 here>"
+EMAIL_HOST="<email protocol here>"
+EMAIL_PORT="<email port here>"
+EMAIL_FROM="<email sender here>"
+EMAIL_PASSWORD="<email password>"
+TOKEN_CLOUDFLARE="<cloudflare api token here>"
+ZONE_ID_CLOUDFLARE="<cloudflare zone id here>"
+ZONE_IP_CLOUDFLARE="<cloudflare zone ip here>"
+
+```
+
 ## Build demo
 
 How to build a docker image for demo purposes
