@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: podchef-backend-secret
+stringData:
+  API_DB_USER: "<username here>"
+  API_DB_PASSWORD: "<password here>"
+  API_TOKEN_SECRET: "<secret here>"
+  API_EMAIL_HOST: "<email protocol here>"
+  API_EMAIL_PORT: "<email port here>"
+  API_EMAIL_FROM: "<email sender here>"
+  API_EMAIL_PASSWORD: "<email password>"
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,10 +30,13 @@ spec:
     spec:
       containers:
       - name: api
-        image: podchef/production:latest
+        image: podchef/backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 1323
+        envFrom:
+        - secretRef:
+            name: podchef-backend-secret
 
 ---
 apiVersion: v1

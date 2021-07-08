@@ -14,7 +14,6 @@ RUN go build -o bin ./cmd/prod/main.go
 FROM alpine
 WORKDIR /app
 COPY --from=0 /build/bin bin
-COPY .env .
 
 ENTRYPOINT ["./bin"]
 EXPOSE 1323

@@ -3,8 +3,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/labstack/gommon/log"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
@@ -20,12 +18,8 @@ import (
 
 func main() {
 	//setup env file
-	viper.SetConfigFile(".env")
-	//read env file
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
+	viper.SetEnvPrefix("api")
+	viper.AutomaticEnv()
 
 	e := echo.New()
 
@@ -33,7 +27,7 @@ func main() {
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://www.podchef.cf", "https://podchef.cf"},
+		AllowOrigins: []string{"*"},
 		// AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAccessControlRequestHeaders},
 		AllowHeaders: []string{"*"},
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},

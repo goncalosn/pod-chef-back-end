@@ -15,4 +15,4 @@ FROM alpine
 COPY --from=0 /build/bin /hello
 
 ENTRYPOINT ["/hello"]
-EXPOSE 1323
+EXPOSE 8080
