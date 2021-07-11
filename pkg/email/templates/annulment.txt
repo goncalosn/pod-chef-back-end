@@ -1,4 +1,0 @@
-Hi,
-You have been removed from the Pod Chef whitelist.
-
-With The best regards, {{.SenderName}}.

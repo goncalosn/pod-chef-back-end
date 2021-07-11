@@ -22,11 +22,6 @@ func (srv *Service) GetAllUsersFromWhitelist() (*[]models.WhitelistUser, error) 
 
 //InsertUserIntoWhitelist service responsible for deleting a user from the database
 func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
-	data := &email.Email{
-		SenderName: "Pod Chef team",
-		Subject:    "You have been added to the Pod Chef whitelist!",
-	}
-
 	//verify if user exists
 	user, err := srv.mongoRepository.GetUserByEmail(to)
 	if err != nil {
@@ -54,21 +49,23 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 	}
 
 	//add user to whitelist
-	id, err := srv.mongoRepository.InsertUserIntoWhitelist(to)
+	_, err = srv.mongoRepository.InsertUserIntoWhitelist(to)
 	if err != nil {
 		return nil, err
 	}
 
-	//call driven adapter responsible for sending an email
-	_, err = srv.emailRepository.SendEmailSMTP(to, data, "invitation.txt")
-
-	if err != nil { //transaction
-		//delete user from whitelist
-		_, err = srv.mongoRepository.DeleteUserFromWhitelistByID(*id)
-
-		//return the error sent by the repository
-		return nil, err
+	data := &email.Email{
+		SenderName: "Pod Chef team",
+		Subject:    "You have been added to the Pod Chef whitelist!",
 	}
+
+	emailBody :=
+		"Hi,\n" +
+			"You are now in the whitelist of the Pod Chef project and can register https://wwww.podchef.cf\n" +
+			"\nWith The best regards, " + data.SenderName + "."
+
+	//call driven adapter responsible for sending an email
+	err = srv.emailRepository.SendEmailSMTP(to, data.Subject, emailBody)
 
 	message := "User invited sucessfully"
 
@@ -77,10 +74,6 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 
 //RemoveUserFromWhitelist service responsible for deleting a user from the database
 func (srv *Service) RemoveUserFromWhitelist(id string) (*string, error) {
-	data := &email.Email{
-		SenderName: "Pod Chef team",
-		Subject:    "You have been removed from the Pod Chef whitelist!",
-	}
 
 	//verify if user exists
 	user, err := srv.mongoRepository.GetUserFromWhitelistByID(id)
@@ -94,8 +87,18 @@ func (srv *Service) RemoveUserFromWhitelist(id string) (*string, error) {
 		return nil, err
 	}
 
+	data := &email.Email{
+		SenderName: "Pod Chef team",
+		Subject:    "You have been removed from the Pod Chef whitelist!",
+	}
+
+	emailBody :=
+		"Hi,\n" +
+			"You have been removed from the Pod Chef whitelist.\n" +
+			"\nWith The best regards, " + data.SenderName + "."
+
 	//call driven adapter responsible for sending an email
-	_, err = srv.emailRepository.SendEmailSMTP(user.Email, data, "annulment.txt")
+	err = srv.emailRepository.SendEmailSMTP(user.Email, data.Subject, emailBody)
 
 	if err != nil {
 		//return the error sent by the repository

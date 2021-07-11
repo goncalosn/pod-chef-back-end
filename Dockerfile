@@ -6,10 +6,10 @@ ENV GO111MODULE=on \
 WORKDIR /build
 COPY . .
 
-RUN go mod download -x
+# RUN go mod download -x
 
 #compilar e criar binário
-RUN go build -o bin ./cmd/prod/main.go
+RUN go build -mod vendor -o bin ./cmd/prod/main.go
 
 FROM alpine
 WORKDIR /app

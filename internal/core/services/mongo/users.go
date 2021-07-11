@@ -175,8 +175,15 @@ func (srv *Service) ResetUserPassword(id string, password string) (*string, erro
 		Password:   password,
 	}
 
+	emailBody :=
+		"Hi,\n" +
+			"Your account password has been reseted.\n" +
+			"Please use the following password to login next time: " + data.Password + "\n" +
+			"\nWith The best regards, " + data.SenderName + ".\n" +
+			"\nPS: This password should only be temporary!!!"
+
 	//call driven adapter responsible for sending an email
-	_, err = srv.emailRepository.SendEmailSMTP(user.Email, data, "password-reset.txt")
+	err = srv.emailRepository.SendEmailSMTP(user.Email, data.Subject, emailBody)
 
 	message := "User's password reseted sucessfully"
 

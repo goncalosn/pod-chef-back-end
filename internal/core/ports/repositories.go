@@ -1,7 +1,6 @@
 package ports
 
 import (
-	email "pod-chef-back-end/internal/core/domain/email"
 	models "pod-chef-back-end/internal/core/domain/mongo"
 	mongo "pod-chef-back-end/internal/core/domain/mongo"
 )
@@ -54,5 +53,5 @@ type MongoRepository interface {
 
 //EmailRepository interface holding all the email respository methods
 type EmailRepository interface {
-	SendEmailSMTP(to string, data *email.Email, template string) (bool, error)
+	SendEmailSMTP(to string, subject string, emailBody string) error
 }

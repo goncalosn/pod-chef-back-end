@@ -1,4 +1,0 @@
-Hi,
-You are now in the whitelist of the Pod Chef project and can register https://wwww.podchef.cf
-
-With The best regards, {{.SenderName}}.
