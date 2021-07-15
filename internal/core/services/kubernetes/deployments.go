@@ -6,7 +6,7 @@ import (
 )
 
 //CreateDeployment service responsible for creating a deployment inside a new namespace
-func (srv *Service) CreateDeployment(id string, role string, deployName string, replicas *int32, image string) (interface{}, error) {
+func (srv *Service) CreateDeployment(id string, role string, deployName string, replicas *int32, image string, containerPort int32) (interface{}, error) {
 	//check the number os deployments by the user
 	deployments, err := srv.mongoRepository.GetDeploymentsFromUser(id)
 
@@ -35,7 +35,7 @@ func (srv *Service) CreateDeployment(id string, role string, deployName string, 
 	deploymentUUID := "deployment-" + deployName //generate name for the deployment
 
 	//call driven adapter responsible for creating deployments inside the kubernetes cluster
-	_, err = srv.kubernetesRepository.CreateDeployment(namespaceUUID, deploymentUUID, replicas, image)
+	_, err = srv.kubernetesRepository.CreateDeployment(namespaceUUID, deploymentUUID, replicas, image, containerPort)
 	if err != nil {
 		//creation of the deployment went wrong, delete everything inside it's namespace
 		//call driven adapter responsible for deleting namespaces inside the kubernetes cluster
@@ -47,7 +47,7 @@ func (srv *Service) CreateDeployment(id string, role string, deployName string, 
 
 	serviceUUID := "service-" + deployName //generate name for the service
 	//create service to expose the deployment
-	_, err = srv.kubernetesRepository.CreateClusterIPService(namespaceUUID, serviceUUID)
+	_, err = srv.kubernetesRepository.CreateClusterIPService(namespaceUUID, serviceUUID, containerPort)
 	if err != nil {
 		//creation of the service went wrong, delete everything inside it's namespace
 		//call driven adapter responsible for deleting namespaces inside the kubernetes cluster

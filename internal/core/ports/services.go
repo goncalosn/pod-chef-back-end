@@ -11,7 +11,7 @@ type KubernetesServices interface {
 
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
-	CreateDeployment(id string, role string, deployName string, replicas *int32, image string) (interface{}, error)
+	CreateDeployment(id string, role string, deployName string, replicas *int32, image string, containerPort int32) (interface{}, error)
 	GetAllDeployments() (interface{}, error)
 	GetDeploymentsByUser(id string) (interface{}, error)
 	GetDeploymentByUserAndName(id string, name string) (interface{}, error)
@@ -22,7 +22,7 @@ type KubernetesServices interface {
 
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateClusterIPService(namespace string, name string) (interface{}, error)
+	CreateClusterIPService(namespace string, name string, containerPort int32) (interface{}, error)
 
 	GetIngressByName(name string, namespace string) (interface{}, error)
 	CreateIngress(namespace string, name string, host string) (interface{}, error)

@@ -37,7 +37,7 @@ func (repo *KubernetesRepository) GetDeploymentByNameAndNamespace(name string, n
 }
 
 //CreateDeployment method responsible for creating a deployment from namespace, name, replicas and image
-func (repo *KubernetesRepository) CreateDeployment(namespace string, name string, replicas *int32, image string) (interface{}, error) {
+func (repo *KubernetesRepository) CreateDeployment(namespace string, name string, replicas *int32, image string, containerPort int32) (interface{}, error) {
 	//call driven adapter responsible for getting a deployment from the kubernetes cluster
 	deploymentsClient := repo.Clientset.AppsV1().Deployments(namespace)
 
@@ -69,7 +69,7 @@ func (repo *KubernetesRepository) CreateDeployment(namespace string, name string
 							Image: image,
 							Ports: []apiv1.ContainerPort{
 								{
-									ContainerPort: 8080,
+									ContainerPort: containerPort,
 								},
 							},
 						},

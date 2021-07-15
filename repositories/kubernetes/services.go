@@ -98,7 +98,7 @@ func (repo *KubernetesRepository) GetServiceByNameAndNamespace(name string, name
 }
 
 //CreateClusterIPService method responsible for creating a cluster ip
-func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name string) (interface{}, error) {
+func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name string, containerPort int32) (interface{}, error) {
 
 	//data structure used to create the service
 	//some of the data is based on the haproxy documentation. link on read me file
@@ -123,7 +123,7 @@ func (repo *KubernetesRepository) CreateClusterIPService(namespace string, name 
 					Name:       "port-1",
 					Port:       80,
 					Protocol:   "TCP",
-					TargetPort: intstr.FromInt(8080),
+					TargetPort: intstr.FromInt(int(containerPort)),
 				},
 			},
 		},

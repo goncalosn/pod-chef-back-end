@@ -27,9 +27,9 @@ func (srv *Service) GetServiceByNameAndNamespace(name string, namespace string) 
 }
 
 //CreateClusterIPService service responsible for creating a kubernetes cluster ip service inside a namespace
-func (srv *Service) CreateClusterIPService(namespace string, name string) (interface{}, error) {
+func (srv *Service) CreateClusterIPService(namespace string, name string, containerPort int32) (interface{}, error) {
 	//call driven adapter responsible for creating a kubernetes cluster ip service inside a namespace
-	response, err := srv.kubernetesRepository.CreateClusterIPService(namespace, name)
+	response, err := srv.kubernetesRepository.CreateClusterIPService(namespace, name, containerPort)
 
 	if err != nil {
 		//return the error sent by the repository

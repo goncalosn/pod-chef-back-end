@@ -13,14 +13,14 @@ type KubernetesRepository interface {
 	GetPodsByNodeAndNamespace(node string, namespace string) (interface{}, error)
 
 	GetDeploymentByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateDeployment(namespace string, name string, replicas *int32, image string) (interface{}, error)
+	CreateDeployment(namespace string, name string, replicas *int32, image string, containerPort int32) (interface{}, error)
 
 	CreateNamespace(name string) (interface{}, error)
 	DeleteNamespace(name string) (interface{}, error)
 
 	GetServicesByNamespace(namespace string) (interface{}, error)
 	GetServiceByNameAndNamespace(name string, namespace string) (interface{}, error)
-	CreateClusterIPService(namespace string, name string) (interface{}, error)
+	CreateClusterIPService(namespace string, name string, containerPort int32) (interface{}, error)
 
 	GetIngressByNameAndNamespace(name string, namespace string) (interface{}, error)
 	CreateIngress(namespace string, name string, uuid string) (interface{}, error)

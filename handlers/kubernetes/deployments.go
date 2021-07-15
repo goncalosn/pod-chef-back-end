@@ -13,9 +13,10 @@ import (
 func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	//body structure
 	type body struct {
-		Name     string `json:"name"`
-		Replicas int    `json:"replicas"`
-		Image    string `json:"image"`
+		Name          string `json:"name"`
+		Replicas      int    `json:"replicas"`
+		Image         string `json:"image"`
+		ContainerPort int    `json:"port"`
 	}
 
 	data := new(body)
@@ -25,7 +26,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	}
 
 	//checking data for empty values
-	if data.Name == "" || data.Replicas < 1 || data.Replicas > 6 || data.Image == "" {
+	if data.Name == "" || data.Replicas < 1 || data.Replicas > 6 || data.Image == "" || !(data.ContainerPort > 0 && data.ContainerPort < 65536) {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid json request"})
 	}
 
@@ -45,7 +46,7 @@ func (h *HTTPHandler) createDeployment(c echo.Context) error {
 	replicasI32 := int32(data.Replicas)
 
 	//call driver adapter responsible for creating the deployment in the kubernetes cluster
-	response, err := h.kubernetesServices.CreateDeployment(id, role, data.Name, &replicasI32, data.Image)
+	response, err := h.kubernetesServices.CreateDeployment(id, role, data.Name, &replicasI32, data.Image, int32(data.ContainerPort))
 	if err != nil {
 		//type assertion of custom Error to default error
 		kubernetesError := err.(*pkg.Error)
