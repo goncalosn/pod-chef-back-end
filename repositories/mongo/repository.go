@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	models "pod-chef-back-end/internal/core/domain/mongo"
 	pkg "pod-chef-back-end/pkg"
 	"time"
 
@@ -69,20 +68,24 @@ func createDefaultAdminAccount(client *mongo.Client, adminEmail string, adminPas
 
 	if res == 0 {
 		crypt := pkg.EncryptPassword(adminPass)
-		user := &models.User{
+
+		user := &struct {
+			Email string
+			Hash  string
+			Name  string
+			Role  string
+			Date  time.Time
+		}{
 			Email: adminEmail,
 			Hash:  string(crypt),
 			Name:  adminEmail,
 			Role:  "admin",
 			Date:  time.Now().UTC(),
 		}
-		_, err := collection.InsertOne(context.Background(), user)
+		_, err = collection.InsertOne(context.Background(), user)
 
 		if err != nil {
-			//type assertion of custom Error to default error
-			mongoError := err.(*pkg.Error)
-			//return the error sent by the service
-			log.Fatal(mongoError)
+			log.Fatal(err)
 		}
 		log.Info("default admin inserted")
 	}
