@@ -39,14 +39,12 @@ func main() {
 
 	//initalize email access configurations
 	emailRepository := emailRepo.NewEmailRepository(viper.GetViper())
-	// emailService := emailServices.NewEmailService(emailRepository, mongoRepository)
-
 	//initalize mongo access configurations
 	mongoRepository := mongoRepo.NewMongoRepository(viper.GetViper())
-	mongoService := mongoServices.NewMongoService(mongoRepository, emailRepository)
-
 	//initalize kubernetes access configurations
 	kubernetesRepository := kubernetesRepo.NewKubernetesProdClient()
+
+	mongoService := mongoServices.NewMongoService(mongoRepository, emailRepository, kubernetesRepository)
 	kubernetesService := kubernetesServices.NewKubernetesService(kubernetesRepository, mongoRepository)
 
 	//initialize the kubernetes http handlers

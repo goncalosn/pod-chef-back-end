@@ -113,8 +113,15 @@ func (srv *Service) DeleteUser(id string) (*string, error) {
 		return nil, err
 	}
 
+	//delete user deployments
 	for _, element := range responseDeployments {
-		_, err := srv.mongoRepository.DeleteDeploymentByUUID(element.UUID)
+		_, err := srv.kubernetesRepository.DeleteNamespace("namespace-" + element.UUID)
+		if err != nil {
+			//return the error sent by the repository
+			return nil, err
+		}
+
+		_, err = srv.mongoRepository.DeleteDeploymentByUUID(element.UUID)
 		if err != nil {
 			//return the error sent by the repository
 			return nil, err

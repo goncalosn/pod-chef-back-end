@@ -6,14 +6,16 @@ import (
 
 //Service Mongo repository
 type Service struct {
-	mongoRepository ports.MongoRepository
-	emailRepository ports.EmailRepository
+	mongoRepository      ports.MongoRepository
+	emailRepository      ports.EmailRepository
+	kubernetesRepository ports.KubernetesRepository
 }
 
 //NewMongoService where the mongo repository is injected
-func NewMongoService(mongoRepository ports.MongoRepository, emailRepository ports.EmailRepository) *Service {
+func NewMongoService(mongoRepository ports.MongoRepository, emailRepository ports.EmailRepository, kubernetesRepository ports.KubernetesRepository) *Service {
 	return &Service{
-		mongoRepository: mongoRepository,
-		emailRepository: emailRepository,
+		mongoRepository:      mongoRepository,
+		emailRepository:      emailRepository,
+		kubernetesRepository: kubernetesRepository,
 	}
 }
