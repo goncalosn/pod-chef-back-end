@@ -10,6 +10,8 @@ stringData:
   API_EMAIL_PORT: "<email port here>"
   API_EMAIL_FROM: "<email sender here>"
   API_EMAIL_PASSWORD: "<email password>"
+  API_DEFAULT_ADMIN_EMAIL: "<admin email>"
+  API_DEFAULT_ADMIN_PASSWORD: "<admin password>"
 
 ---
 apiVersion: apps/v1
