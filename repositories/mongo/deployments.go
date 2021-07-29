@@ -171,3 +171,30 @@ func (repo *MongoRepository) DeleteDeploymentByUUID(uuid string) (bool, error) {
 
 	return true, nil
 }
+
+// returns true if there is no documents present on the collection or deleted all deployments successfully
+// returns false if there is an error
+func (repo *MongoRepository) DeleteAllDeploymentFromUser(id string) (bool, error) {
+	collection := repo.Client.Database("podchef").Collection("deployments")
+
+	//data to filter the search with
+	filter := bson.M{"user": id}
+
+	//call driven adapter responsible for getting a deployment's data from the database to a cursor
+	_, err := collection.DeleteMany(context.Background(), filter)
+
+	// this somehow doesnt work
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return true, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "No deployments were found"}
+		}
+
+		//print the error stack
+		log.Error(err)
+
+		//return a custom error
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
+	return true, nil
+}

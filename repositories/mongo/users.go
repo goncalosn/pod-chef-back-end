@@ -155,6 +155,18 @@ func (repo *MongoRepository) DeleteUserByID(id string) (bool, error) {
 		return false, &pkg.Error{Err: err, Code: http.StatusNotFound, Message: "User not found"}
 	}
 
+	res, err := repo.DeleteAllDeploymentFromUser(id)
+	if err != nil {
+		// if res is true it means that the user never deployed an app,
+		// so, it successfully searched
+		if res {
+			return true, nil
+		}
+		// if res is false than there is a critical error
+		log.Error(err)
+		return false, &pkg.Error{Err: err, Code: http.StatusInternalServerError, Message: "Internal error"}
+	}
+
 	//data to filter with
 	filter := bson.M{"_id": hexID}
 

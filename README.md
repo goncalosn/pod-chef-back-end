@@ -14,6 +14,8 @@ EMAIL_HOST="<email protocol here>"
 EMAIL_PORT="<email port here>"
 EMAIL_FROM="<email sender here>"
 EMAIL_PASSWORD="<email password>"
+DEFAULT_ADMIN_EMAIL="<admin email>"
+DEFAULT_ADMIN_PASSWORD="<admin password>"
 
 ```
 

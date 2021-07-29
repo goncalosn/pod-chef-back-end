@@ -61,11 +61,11 @@ func (srv *Service) InsertUserIntoWhitelist(to string) (*string, error) {
 
 	emailBody :=
 		"Hi,\n" +
-			"You are now in the whitelist of the Pod Chef project and can register https://wwww.podchef.cf\n" +
+			"You are now in the whitelist of the Pod Chef project and can register https://www.podchef.cf\n" +
 			"\nWith The best regards, " + data.SenderName + "."
 
 	//call driven adapter responsible for sending an email
-	err = srv.emailRepository.SendEmailSMTP(to, data.Subject, emailBody)
+	_ = srv.emailRepository.SendEmailSMTP(to, data.Subject, emailBody)
 
 	message := "User invited sucessfully"
 
