@@ -2,9 +2,7 @@
 
 API to serve the front-end side
 
-## .env example
-
-How to build a docker image for demo purposes
+## .env
 
 ```bash
 DB_USER="<username here>"
