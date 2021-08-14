@@ -1,6 +1,6 @@
 # pod-chef-back-end
 
-API to serve the front-end side
+API to serve the [Pod Chef front-end](https://github.com/goncalosn/pod-chef-front-end)
 
 ## .env
 
@@ -46,6 +46,9 @@ sudo docker run -d --name podchef --net=host --volume=$HOME/.kube/config:/root/.
 ```
 
 # Cluster init configurations
+
+![image](https://user-images.githubusercontent.com/61091513/129429867-eb0a3a08-26d2-4ee6-858f-8aa08792d59c.png)
+#### Note: Each Worker node contains the user's apps (containers)
 
 # Cluster - node - CMD's
 
